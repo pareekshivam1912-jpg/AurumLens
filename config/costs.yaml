@@ -1,0 +1,56 @@
+# AurumLens Cost Schedule v2.1
+# All candidate values require broker and regulatory verification.
+# In strict mode or before live trading, all rates must be verified against actual contract notes.
+
+brokerage:
+  mode: "min_flat_pct"
+  flat_inr: 20.0
+  pct: 0.0003
+  status: SECONDARY
+  source: "Standard Indian discount commodity broker tariff (e.g. Zerodha/Groww standard commodity rate)"
+  verified_at: null
+  note: "Broker-specific; flat Rs 20 or 0.03% whichever is lower per executed order"
+
+ctt_sell:
+  rate: 0.0001
+  status: SECONDARY
+  source: "Finance Act / MCX Commodity Transaction Tax Schedule"
+  verified_at: null
+  note: "CTT applies to SELL transactions only at 0.01% of turnover"
+
+exchange:
+  rate: 0.000021
+  status: SECONDARY
+  source: "MCX Transaction Charges Circular"
+  verified_at: null
+  note: "Exchange turnover fee: approximately 0.0021% on commodity futures"
+
+sebi:
+  rate: 0.000001
+  status: SECONDARY
+  source: "SEBI (Regulatory Fee on Commodity Derivative Contracts) Circular"
+  verified_at: null
+  note: "SEBI turnover charge: Rs 10 per crore (0.0001%)"
+
+stamp_buy:
+  rate: 0.00002
+  status: SECONDARY
+  source: "Indian Stamp Act (Uniform Stamp Duty on Derivatives)"
+  verified_at: null
+  note: "Stamp duty applies to BUY transactions only at 0.002% of turnover"
+
+gst:
+  rate: 0.18
+  status: SECONDARY
+  source: "GST Council Schedule on Financial Services"
+  verified_at: null
+  applies_to:
+    - "brokerage"
+    - "exchange"
+    - "sebi"
+  note: "18% Goods and Services Tax applied to brokerage, exchange charges, and SEBI fees"
+
+safety_buffer_inr_per_10g:
+  value: null
+  status: TO_VALIDATE
+  note: "Discretionary safety buffer margin in Rs per 10g fine gold; must be validated during backtesting"

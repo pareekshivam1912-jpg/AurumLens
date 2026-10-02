@@ -1,0 +1,164 @@
+# AurumLens Contract Specifications & Facts Register v2.1
+# Every fact is tracked with a status: VERIFIED_OFFICIAL | SECONDARY | DISPUTED | TO_VERIFY
+# In spec_mode: strict, any unverified spec triggers QUIET (SPEC_UNVERIFIED).
+spec_mode: research
+
+target_basis:
+  grams: 10.0
+  purity: 0.999
+
+contracts:
+  GOLDM:
+    trading_unit_g:
+      value: 100.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-mini (Contract Specification)"
+      verified_at: null
+      note: "Standard Gold Mini lot size: 100 grams"
+    quote_basis_g:
+      value: 10.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-mini"
+      verified_at: null
+      note: "Quoted in Rs. per 10 grams"
+    purity:
+      value: 0.995
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-mini"
+      verified_at: null
+      note: "Standard delivery grade: 995 fineness"
+    expiry_rule:
+      value: "DAY_5_OF_CONTRACT_MONTH"
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-mini"
+      verified_at: null
+      note: "5th day of the contract expiry month (or preceding business day if holiday)"
+    tender_days:
+      value: 3
+      status: SECONDARY
+      source: "MCX Staggered Delivery Notice (Effective Jan 2025)"
+      verified_at: null
+      note: "Tender period reduced to last 3 trading days prior to expiry"
+    tick_size:
+      value: 1.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-mini"
+      verified_at: null
+      note: "Re 1 per 10 grams"
+
+  GOLDTEN:
+    trading_unit_g:
+      value: 10.0
+      status: SECONDARY
+      source: "MCX Circular on GOLDTEN Launch (April 2025)"
+      verified_at: null
+      note: "Trading unit is 10 grams"
+    quote_basis_g:
+      value: 10.0
+      status: SECONDARY
+      source: "MCX Circular on GOLDTEN Launch"
+      verified_at: null
+      note: "Quoted in Rs. per 10 grams"
+    purity:
+      value: 0.999
+      status: SECONDARY
+      source: "MCX Circular on GOLDTEN Launch"
+      verified_at: null
+      note: "999 fineness (pure gold)"
+    expiry_rule:
+      value: "LAST_CALENDAR_DAY_OF_CONTRACT_MONTH"
+      status: SECONDARY
+      source: "MCX Launch Circular / Circular MCX/TRD/456/2025"
+      verified_at: null
+      note: "Last calendar day of the contract month"
+    tender_days:
+      value: 3
+      status: SECONDARY
+      source: "MCX Staggered Delivery Rules"
+      verified_at: null
+      note: "Last 3 trading days of the contract"
+    tick_size:
+      value: 1.0
+      status: SECONDARY
+      source: "MCX Circular"
+      verified_at: null
+      note: "Re 1 per 10 grams"
+
+  GOLDGUINEA:
+    trading_unit_g:
+      value: 8.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-guinea"
+      verified_at: null
+      note: "Trading unit is 8 grams (1 sovereign)"
+    quote_basis_g:
+      value: 8.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-guinea"
+      verified_at: null
+      note: "Quoted in Rs. per 8 grams"
+    purity:
+      value: null
+      status: DISPUTED
+      source: "PRD Fact F9; conflicting broker and historical MCX circulars"
+      verified_at: null
+      candidates:
+        - 0.995
+        - 0.999
+      note: "DISPUTED: Some specifications cite 995 base with 999 premium; others cite 999 fineness coin standard"
+    expiry_rule:
+      value: "LAST_CALENDAR_DAY_OF_CONTRACT_MONTH"
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-guinea"
+      verified_at: null
+      note: "Last day of contract month"
+    tender_days:
+      value: 3
+      status: SECONDARY
+      source: "MCX Staggered Delivery Rules"
+      verified_at: null
+      note: "Last 3 trading days of the contract"
+    tick_size:
+      value: 1.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-guinea"
+      verified_at: null
+      note: "Re 1 per 8 grams"
+
+  GOLDPETAL:
+    trading_unit_g:
+      value: 1.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-petal"
+      verified_at: null
+      note: "Trading unit is 1 gram"
+    quote_basis_g:
+      value: 1.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-petal"
+      verified_at: null
+      note: "Quoted in Rs. per 1 gram"
+    purity:
+      value: 0.999
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-petal"
+      verified_at: null
+      note: "999 fineness (pure gold)"
+    expiry_rule:
+      value: "LAST_CALENDAR_DAY_OF_CONTRACT_MONTH"
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-petal"
+      verified_at: null
+      note: "Last day of contract month"
+    tender_days:
+      value: 3
+      status: SECONDARY
+      source: "MCX Staggered Delivery Rules"
+      verified_at: null
+      note: "Last 3 trading days of the contract"
+    tick_size:
+      value: 1.0
+      status: SECONDARY
+      source: "https://www.mcxindia.com/products/bullion/gold-petal"
+      verified_at: null
+      note: "Re 1 per 1 gram"

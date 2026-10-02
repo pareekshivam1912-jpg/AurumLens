@@ -1,0 +1,27 @@
+# AurumLens Market Events Configuration v2.1
+# Events displayed on price and spread charts with verified flag.
+
+events:
+  - event_date: "2023-10-16"
+    label: "MCX Platform Migration to TCS CDP"
+    category: "EXCHANGE_PLATFORM"
+    source: "MCX Press Release & Member Circulars"
+    verified: false
+
+  - event_date: "2025-01-01"
+    label: "Staggered Delivery Tender Window Reduced to 3 Days"
+    category: "REGULATORY"
+    source: "MCX Staggered Delivery Revision Circular"
+    verified: false
+
+  - event_date: "2025-04-10"
+    label: "Launch of GOLDTEN 10g Contract"
+    category: "PRODUCT_LAUNCH"
+    source: "MCX Circular on GOLDTEN Contract Introduction"
+    verified: false
+
+  - event_date: "2025-08-20"
+    label: "MCX/TRD/456/2025 Bullion Launch Calendar Modification"
+    category: "REGULATORY"
+    source: "Circular MCX/TRD/456/2025"
+    verified: false

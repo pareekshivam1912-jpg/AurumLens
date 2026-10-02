@@ -1,0 +1,50 @@
+# AurumLens Strategy & Thresholds Configuration v2.1
+# Parameters are versioned and subject to walk-forward validation.
+
+scoring:
+  lookback_window: 60
+  min_history_obs: 30
+  entry_z: 2.0
+  exit_z: 0.5
+  score_method: "zscore"  # zscore | mad
+
+pairing:
+  max_expiry_gap_days: 35
+  carry_fallback_rate: 0.065
+  block_on_carry_fallback: false
+
+price_quality:
+  price_source: "close"   # settlement | close
+  min_volume_for_price: 5
+  stale_gap_threshold: 0.015
+
+liquidity:
+  min_volume: 10
+  min_oi: 50
+  volume_sma_days: 5
+
+expiry:
+  unsafe_expiry_window_days: 5  # 3 days tender window + 2 days safety buffer
+
+slippage:
+  slippage_model: "corwin_schultz"  # corwin_schultz | fixed_bps
+  fallback_bps:
+    GOLDM: 5.0
+    GOLDTEN: 8.0
+    GOLDGUINEA: 10.0
+    GOLDPETAL: 12.0
+  cs_window: 5
+
+convergence:
+  convergence_capture_ratio: 0.65
+
+sizing:
+  max_lots_per_leg: 50
+  max_notional_inr: 2500000.0
+
+backtest:
+  max_holding_days: 15
+  train_window: 120
+  test_window: 30
+  holdout_start: "2026-06-01"
+  execution_price: "close"

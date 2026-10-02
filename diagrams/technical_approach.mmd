@@ -1,0 +1,123 @@
+flowchart TB
+    subgraph SRC["Data Sources"]
+        MCX(("MCX Bhavcopy<br/>daily archives<br/>external"))
+        SPEC["Contract specs + facts register<br/>status per field<br/>[contracts.yaml]"]
+        CFG["Costs, strategy, events<br/>versioned config<br/>[costs.yaml · strategy.yaml]"]
+    end
+
+    subgraph ING["Ingestion & Data Quality"]
+        DL["Polite downloader<br/>cache + sha256<br/>[downloader.py]"]
+        ADP{{"Source adapter contract<br/>canonical schema<br/>[adapters/base.py]"}}
+        LEG["Pre-Oct-2023 format<br/>legacy adapter<br/>[legacy.py]"]
+        CDP["Post-Oct-2023 CDP format<br/>CDP adapter<br/>[cdp.py]"]
+        VAL["Date + schema validation<br/>dedupe, reject log<br/>[validator.py]"]
+        DQ["Price quality<br/>settlement/close, SUSPECT flags<br/>[quality.py]"]
+    end
+
+    subgraph STORE["Storage Boundary"]
+        RAW[("Raw snapshots<br/>immutable<br/>[data/raw]")]
+        DB[("DuckDB<br/>symbol + expiry + trade_date<br/>[db/schema.py]")]
+        PQ[("Parquet datasets<br/>dataset_version<br/>[data/processed]")]
+    end
+
+    subgraph QUANT["Quant Core (pure functions)"]
+        NORM["Normalize to Rs/10g of 999<br/>purity + quote basis<br/>[normalization.py]"]
+        PAIR["Smallest-gap expiry pairing<br/>actual contract IDs<br/>[expiry_matching.py]"]
+        CARRY["Carry: own curve, else fallback<br/>carry_source recorded<br/>[carry.py]"]
+        SPR["Log spread + z-score<br/>history through t-1<br/>[spreads.py · scoring.py]"]
+        SIZE["Lot-ratio sizer<br/>residual fine grams<br/>[sizing.py]"]
+        COST["Itemised costs + slippage<br/>CTT, GST, Corwin-Schultz<br/>[costs.py · slippage.py]"]
+    end
+
+    subgraph SIG["Decision Engine"]
+        GATE{{"All-gate evaluator<br/>11 gates, margins, reason codes<br/>[gates.py]"}}
+        NM["Nearest-miss ranking<br/>quiet-day insight<br/>[near_miss.py]"]
+        EVD[("Evidence records<br/>QUIET / ALERT<br/>[signals/service.py]")]
+    end
+
+    subgraph BT["Validation"]
+        WF["Walk-forward folds<br/>train-only tuning, holdout<br/>[walkforward.py]"]
+        BASE["Baselines<br/>always-quiet, random entry<br/>[baselines.py]"]
+        ATTR["Attribution + DSR<br/>strategy vs residual gold<br/>[attribution.py · metrics.py]"]
+        TRI[("Trial registry<br/>every config tried<br/>[trials.py]")]
+    end
+
+    subgraph EXP["Service & Experience"]
+        API{{"FastAPI boundary<br/>read-only + token admin<br/>[api/main.py]"}}
+        UI["Streamlit dashboard<br/>9 screens + replay<br/>[ui/]"]
+        HT["Hedge tools<br/>converter, cheapest-to-hedge<br/>[tools/hedge_cost.py]"]
+        XPL["Explainer EN / HI<br/>templates + numeric guard<br/>[explain/explainer.py]"]
+    end
+
+    subgraph OPS["Alerts & Paper Execution"]
+        TG["Telegram alerts<br/>gated signals only<br/>[alerts/telegram.py]"]
+        PAP{{"Paper execution adapter<br/>two-leg simulated orders<br/>[paper/simulator.py]"}}
+        POS[("Paper positions + P&L<br/>audit log<br/>[paper/positions.py]")]
+    end
+
+    BRK["Broker adapter<br/>behind risk manager<br/>post-MVP only"]
+
+    MCX -->|downloads| DL
+    DL -->|stores evidence| RAW
+    DL -->|parses via| ADP
+    ADP -->|implemented by| LEG
+    ADP -->|implemented by| CDP
+    LEG --> VAL
+    CDP --> VAL
+    VAL -->|rejects logged| RAW
+    VAL -->|clean rows| DQ
+    DQ -->|upserts| DB
+    DB -->|snapshots| PQ
+
+    SPEC -->|verified specs| NORM
+    CFG -->|thresholds + costs| GATE
+    DB -->|contract rows| NORM
+    NORM --> PAIR
+    PAIR --> CARRY
+    CARRY --> SPR
+    SPR --> SIZE
+    SIZE --> COST
+    COST -->|economics| GATE
+    SPR -->|z-score| GATE
+    GATE -->|stores| EVD
+    GATE -->|quiet days| NM
+
+    EVD -->|signals on t| WF
+    WF -->|t+1 fills| ATTR
+    BASE -->|compared with| ATTR
+    WF -->|logs configs| TRI
+    TRI -->|n_trials for DSR| ATTR
+
+    EVD -->|serves| API
+    NM -->|serves| API
+    ATTR -->|results| API
+    DB -->|prices + health| API
+    HT -->|reuses quant core| API
+    EVD -->|explains| XPL
+    XPL -->|EN / HI text| API
+    API -->|renders| UI
+
+    EVD -->|new ALERT| TG
+    EVD -->|validated signal| PAP
+    PAP -->|simulated fills| POS
+    PAP -. future, never direct .-> BRK
+
+    classDef src fill:#eef2ff,stroke:#4f46e5,color:#1e1b4b
+    classDef ing fill:#dbeafe,stroke:#2563eb,color:#0c2a5b
+    classDef store fill:#dcfce7,stroke:#16a34a,color:#064e1b
+    classDef quant fill:#fef3c7,stroke:#d97706,color:#5a3300
+    classDef sig fill:#ffe4e6,stroke:#e11d48,color:#6b0f24
+    classDef bt fill:#f3e8ff,stroke:#9333ea,color:#3b0a63
+    classDef exp fill:#e0f2fe,stroke:#0284c7,color:#063a57
+    classDef ops fill:#ccfbf1,stroke:#0d9488,color:#053d38
+    classDef future fill:#f5f5f5,stroke:#9ca3af,color:#4b5563,stroke-dasharray:4 3
+
+    class MCX,SPEC,CFG src
+    class DL,ADP,LEG,CDP,VAL,DQ ing
+    class RAW,DB,PQ store
+    class NORM,PAIR,CARRY,SPR,SIZE,COST quant
+    class GATE,NM,EVD sig
+    class WF,BASE,ATTR,TRI bt
+    class API,UI,HT,XPL exp
+    class TG,PAP,POS ops
+    class BRK future
