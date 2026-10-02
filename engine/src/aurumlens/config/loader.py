@@ -48,17 +48,36 @@ def load_yaml_dict(path: Path) -> dict:
         return yaml.safe_load(f) or {}
 
 
+def load_contracts_config(path: Path) -> ContractsConfig:
+    """Load and validate contracts.yaml."""
+    raw = load_yaml_dict(path)
+    return ContractsConfig.model_validate(raw)
+
+
+def load_costs_config(path: Path) -> CostsConfig:
+    """Load and validate costs.yaml."""
+    raw = load_yaml_dict(path)
+    return CostsConfig.model_validate(raw)
+
+
+def load_strategy_config(path: Path) -> StrategyConfig:
+    """Load and validate strategy.yaml."""
+    raw = load_yaml_dict(path)
+    return StrategyConfig.model_validate(raw)
+
+
+def load_events_config(path: Path) -> EventsConfig:
+    """Load and validate events.yaml."""
+    raw = load_yaml_dict(path)
+    return EventsConfig.model_validate(raw)
+
+
 def load_all_configs(config_dir: Path) -> LoadedConfig:
     """Load and validate all YAML configurations and stamp with config_version."""
-    contracts_raw = load_yaml_dict(config_dir / "contracts.yaml")
-    costs_raw = load_yaml_dict(config_dir / "costs.yaml")
-    strategy_raw = load_yaml_dict(config_dir / "strategy.yaml")
-    events_raw = load_yaml_dict(config_dir / "events.yaml")
-
-    contracts = ContractsConfig.model_validate(contracts_raw)
-    costs = CostsConfig.model_validate(costs_raw)
-    strategy = StrategyConfig.model_validate(strategy_raw)
-    events = EventsConfig.model_validate(events_raw)
+    contracts = load_contracts_config(config_dir / "contracts.yaml")
+    costs = load_costs_config(config_dir / "costs.yaml")
+    strategy = load_strategy_config(config_dir / "strategy.yaml")
+    events = load_events_config(config_dir / "events.yaml")
 
     config_version = compute_config_version(config_dir)
 

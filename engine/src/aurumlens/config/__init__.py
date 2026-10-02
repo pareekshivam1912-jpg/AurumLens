@@ -14,6 +14,10 @@ from aurumlens.config.loader import (
     LoadedConfig,
     compute_config_version,
     load_all_configs,
+    load_contracts_config,
+    load_costs_config,
+    load_strategy_config,
+    load_events_config,
 )
 
 __all__ = [
@@ -30,4 +34,8 @@ __all__ = [
     "LoadedConfig",
     "compute_config_version",
     "load_all_configs",
+    "load_contracts_config",
+    "load_costs_config",
+    "load_strategy_config",
+    "load_events_config",
 ]
