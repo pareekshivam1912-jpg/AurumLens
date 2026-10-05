@@ -80,6 +80,8 @@ class SignalExplainer:
         # Format variables from evidence
         # Pre-calculate auxiliary values that must appear in evidence for the numeric guard
         evidence["target_basis_g"] = 10.0  # Standard MCX target quote basis (R16)
+        evidence["lookback_days"] = float(evidence.get("lookback_days", 60))
+        evidence["entry_z"] = float(evidence.get("entry_z", 2.0))
         edge = float(evidence.get("net_expected_edge_inr", 0.0))
         pair_grams = float(evidence.get("pair_fine_grams", 40.0))
         edge_per_10g = round(edge / (pair_grams / 10.0), 2) if pair_grams > 0 else 0.0
