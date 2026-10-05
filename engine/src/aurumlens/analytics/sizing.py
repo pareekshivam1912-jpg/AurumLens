@@ -404,10 +404,14 @@ def _contract_fine_grams_from_config(
             p = spec.purity
             raw_p = p.value if hasattr(p, "value") else p
             purity = float(raw_p) if raw_p is not None else None
+            if purity is None and hasattr(p, "candidates") and p.candidates:
+                purity = float(p.candidates[-1])
         elif isinstance(spec, dict) and "purity" in spec:
             p = spec["purity"]
             raw_p = p["value"] if isinstance(p, dict) and "value" in p else p
             purity = float(raw_p) if raw_p is not None else None
+            if purity is None and isinstance(p, dict) and "candidates" in p and p["candidates"]:
+                purity = float(p["candidates"][-1])
 
     if purity is None:
         raise ValueError(f"Contract '{symbol}' has undefined purity. Provide purity override.")

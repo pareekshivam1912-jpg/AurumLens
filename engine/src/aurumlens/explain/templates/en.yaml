@@ -1,0 +1,11 @@
+# English explanation templates for AurumLens
+# Numbers are filled strictly from the evidence record JSON (R25)
+
+alert:
+  summary: "On {trade_date}, {leg_a_symbol} (₹{quoted_price_a}) normalized is rich relative to {leg_b_symbol} (₹{quoted_price_b}) by {zscore} standard deviations above the {lookback_days}-day rolling mean. All {gates_passed} risk and liquidity gates passed. Expected gross convergence is ₹{expected_convergence_inr}, total friction is ₹{total_costs_inr}, and estimated adverse slippage is ₹{slippage_inr}, yielding a net edge of +₹{net_expected_edge_inr} (₹{edge_per_10g} per 10g). Recommended sizing is {lots_a} lots {leg_a_symbol} to {lots_b} lots {leg_b_symbol} with {residual_fine_g}g residual unhedged gold."
+
+quiet:
+  summary: "On {trade_date}, {pair_name} relative-value spread is evaluated at z = {zscore} with status QUIET. {gates_passed} of {gates_total} gates passed. Trigger inhibited due to: {primary_reason}."
+
+near_miss:
+  summary: "On {trade_date}, {pair_name} is the nearest miss with {gates_passed} of {gates_total} gates passed (z = {zscore} vs hurdle ≥ {entry_z}). Staging inhibited by: {primary_reason}."

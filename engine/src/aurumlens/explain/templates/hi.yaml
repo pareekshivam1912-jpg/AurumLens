@@ -1,0 +1,11 @@
+# Hindi explanation templates for AurumLens
+# Numbers are filled strictly from the evidence record JSON (R25)
+
+alert:
+  summary: "{trade_date} को, {leg_a_symbol} (₹{quoted_price_a}) मानकीकृत भाव {lookback_days}-दिवसीय रोलिंग औसत से {zscore} मानक विचलन अधिक है ({leg_b_symbol} ₹{quoted_price_b} की तुलना में)। सभी {gates_passed} जोखिम और तरलता गेट्स पास हुए। अपेक्षित सकल अभिसरण ₹{expected_convergence_inr} है, कुल लागत ₹{total_costs_inr} और स्लिपेज ₹{slippage_inr} है, जिससे शुद्ध लाभ +₹{net_expected_edge_inr} (₹{edge_per_10g} प्रति 10 ग्राम) प्राप्त होता है। अनुशंसित लॉट अनुपात {lots_a} लॉट {leg_a_symbol} और {lots_b} लॉट {leg_b_symbol} है जिसमें {residual_fine_g} ग्राम अवशिष्ट जोखिम है।"
+
+quiet:
+  summary: "{trade_date} को, {pair_name} रिलेटिव-वैल्यू स्प्रेड z = {zscore} के साथ शांत (QUIET) स्थिति में है। {gates_total} में से {gates_passed} गेट्स पास हुए। मुख्य कारण: {primary_reason}।"
+
+near_miss:
+  summary: "{trade_date} को, {pair_name} निकटतम अवसर (Nearest Miss) रहा जिसमें {gates_total} में से {gates_passed} गेट्स पास हुए (z = {zscore} बनाम आवश्यक ≥ {entry_z})। रुकावट का कारण: {primary_reason}।"
