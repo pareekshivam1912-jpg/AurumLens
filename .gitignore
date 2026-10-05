@@ -16,6 +16,7 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+*.zip
 
 # Data caches (immutable raw and processed snapshots git-ignored; fixtures kept)
 data/cache/
