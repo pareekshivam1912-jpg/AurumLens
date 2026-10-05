@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AurumLens — MCX Gold RV Suite</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            ink: "#1E1E1E",
+            slate: "#4B5563",
+            gold: {
+              DEFAULT: "#B7862C",
+              deep: "#B7862C",
+              tint: "#FBF3E0",
+              border: "#EAD7B2"
+            },
+            panel: "#F7F5F0",
+            quiet: "#2E7D32",
+            alert: "#C62828"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .tnum {
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #E5E7EB;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D1D5DB;
+    }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#1E1E1E] font-body antialiased flex flex-col min-h-screen">
+<!-- ================= TOP UTILITY / ALERT BANNER ================= -->
+<aside class="w-full bg-[#FEF9E7] border-b border-[#F7E7A9] px-6 py-2 flex items-center justify-between text-xs text-[#7A5400] z-50">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#B7862C] text-[18px]">science</span>
+<span class="font-medium tracking-tight">Research Mode — unverified specs in use. Indicative statistical arbitrage backfill active.</span>
+<span class="inline-block px-1.5 py-0.5 rounded bg-[#F7E7A9] text-[#5C3E00] text-[10px] font-semibold tracking-wide uppercase">Sandbox</span>
+</div>
+<div class="flex items-center gap-4">
+<a class="underline hover:text-[#4A3200] font-medium transition-colors" href="#specs">Inspect Parameters</a>
+<button aria-label="Dismiss banner" class="text-[#8C6400] hover:text-[#1E1E1E] transition-colors p-0.5" onclick="this.parentElement.parentElement.remove()">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</aside>
+<!-- ================= TOP UTILITY BAR (Shared Component JSON Blueprint) ================= -->
+<header class="sticky top-0 z-30 flex items-center justify-between px-6 h-14 w-full bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
+<!-- Left segment: Institutional Title & Live Price Ticker -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded bg-[#1E1E1E] flex items-center justify-center text-[#B7862C]">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">candlestick_chart</span>
+</div>
+<div>
+<span class="font-headline text-sm font-bold tracking-tight text-black dark:text-white">AurumLens</span>
+<span class="text-[10px] text-slate font-medium ml-2 px-1.5 py-0.2 rounded bg-black/5 dark:bg-white/10">MCX Gold RV Suite</span>
+</div>
+</div>
+<div class="hidden lg:flex items-center gap-3 pl-6 border-l border-black/10 text-xs">
+<div class="flex items-center gap-1.5">
+<span class="text-black/60 dark:text-white/60 uppercase tracking-wider font-semibold text-[11px]">MCX: GOLD (Active)</span>
+<span class="text-black dark:text-white font-semibold tnum text-sm">₹1,20,482.41</span>
+<span class="text-quiet text-[11px] font-medium flex items-center">▲ +0.34%</span>
+</div>
+<span class="text-black/20 dark:text-white/20">|</span>
+<div class="flex items-center gap-1.5 text-black/60 dark:text-white/60">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet animate-pulse"></span>
+<span class="tnum text-[11px]">Live Feed (0.4s)</span>
+</div>
+</div>
+</div>
+<!-- Right Controls: Action buttons & Terminal state -->
+<div class="flex items-center gap-3 font-headline text-xs font-medium">
+<div class="flex items-center gap-1 text-black/60 dark:text-white/60">
+<button class="p-1.5 rounded hover:text-black dark:hover:text-white hover:bg-black/5 transition-colors" title="Filter Feed">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+</button>
+<button class="p-1.5 rounded hover:text-black dark:hover:text-white hover:bg-black/5 transition-colors" title="Tune Constraints">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="p-1.5 rounded hover:text-black dark:hover:text-white hover:bg-black/5 transition-colors" title="Force Sync">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<div class="h-4 w-px bg-black/10 dark:bg-white/10 mx-1"></div>
+<button class="px-3 py-1.5 rounded border border-black/15 text-black/80 hover:text-black hover:bg-black/5 transition-all text-xs font-medium">
+        Paper Engine
+      </button>
+<button class="px-3.5 py-1.5 rounded bg-[#1E1E1E] text-white hover:bg-black transition-all flex items-center gap-1.5 text-xs font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-quiet"></span>
+<span>Live Terminal</span>
+</button>
+<!-- CRO Account Indicator -->
+<div class="flex items-center gap-2 pl-2">
+<div class="w-8 h-8 rounded-full bg-[#B7862C]/15 border border-[#B7862C]/30 flex items-center justify-center text-[#B7862C] font-semibold text-xs" title="Chief Risk Officer Account">
+          RO
+        </div>
+</div>
+</div>
+</header>
+<!-- ================= MAIN APP WRAPPER ================= -->
+<div class="flex-1 flex w-full relative">
+<!-- ================= SIDEBAR NAVIGATION ================= -->
+<aside class="fixed top-14 left-0 bottom-0 z-40 w-64 h-[calc(100vh-3.5rem)] flex flex-col justify-between shrink-0 bg-white dark:bg-black border-r border-black/10 dark:border-white/10 p-3 select-none">
+<!-- Nav Primary Tabs -->
+<div class="flex flex-col gap-1">
+<!-- Top institutional branding capsule -->
+<div class="px-3 py-2.5 mb-2 rounded bg-[#F7F5F0] border border-black/5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#B7862C] text-[20px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+<div>
+<div class="text-[11px] font-semibold uppercase tracking-wider text-slate">Risk Mandate</div>
+<div class="text-xs font-bold text-[#1E1E1E]">MCX ARB-DESK 01</div>
+</div>
+</div>
+<span class="inline-block px-1.5 py-0.5 rounded bg-quiet/10 text-quiet font-bold text-[10px] tracking-tight">ACTIVE</span>
+</div>
+<!-- 1. Overview (Active - matched directly from JSON hierarchy) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-black dark:text-white bg-black/5 dark:bg-white/10 transition-all duration-150 active:scale-[0.99]" href="#overview">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-headline font-body text-sm tracking-tight">Overview</span>
+</a>
+<!-- 2. Pair Analysis -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#pair-analysis">
+<span class="material-symbols-outlined text-[20px]">compare_arrows</span>
+<span class="font-headline font-body text-sm tracking-tight">Pair Analysis</span>
+</a>
+<!-- 3. Backtest -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#backtest">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="font-headline font-body text-sm tracking-tight">Backtest</span>
+</a>
+<!-- 4. Calendar -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#calendar">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+<span class="font-headline font-body text-sm tracking-tight">Calendar</span>
+</a>
+<!-- 5. Alert Log -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#alert-log">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+<span class="font-headline font-body text-sm tracking-tight">Alert Log</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-black/5 text-[10px] font-semibold text-slate tnum">0</span>
+</a>
+<!-- 6. Hedge Tools -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#hedge-tools">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+<span class="font-headline font-body text-sm tracking-tight">Hedge Tools</span>
+</a>
+<!-- 7. Data Health -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#data-health">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">health_and_safety</span>
+<span class="font-headline font-body text-sm tracking-tight">Data Health</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-quiet"></span>
+</a>
+<!-- 8. Methodology -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#methodology">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="font-headline font-body text-sm tracking-tight">Methodology</span>
+</a>
+<!-- 9. Paper Trading -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#paper-trading">
+<span class="material-symbols-outlined text-[20px]">candlestick_chart</span>
+<span class="font-headline font-body text-sm tracking-tight">Paper Trading</span>
+</a>
+</div>
+<!-- Nav Bottom Area & CTA -->
+<div class="flex flex-col gap-2 pt-3 border-t border-black/10 dark:border-white/10">
+<!-- Export CTA -->
+<button class="w-full py-2 px-3 rounded-lg border border-[#B7862C]/40 bg-[#FBF3E0] hover:bg-[#F5E8C8] text-[#845C10] font-headline text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Export Report</span>
+</button>
+<div class="flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#docs">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#settings">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<!-- Latency Footnote in Rail -->
+<div class="px-3 py-1 text-[10px] text-slate/80 flex items-center justify-between">
+<span>MCX Gateway 1</span>
+<span class="font-mono text-quiet">3.8 ms</span>
+</div>
+</div>
+</aside>
+<!-- ================= CANVAS CONTENT AREA ================= -->
+<main class="ml-64 flex-1 p-6 md:p-8 space-y-6 max-w-[1440px]">
+<!-- Market Status Strip & Indicators -->
+<section class="bg-white rounded-xl border border-black/10 p-5 shadow-xs">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<!-- Primary Pill Status & Time -->
+<div class="flex items-center gap-5">
+<!-- Institutional Status Badge -->
+<div class="flex items-center gap-2.5">
+<span class="text-xs uppercase font-semibold text-slate tracking-wider">System State:</span>
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2E7D32] text-white font-bold text-xs tracking-wide shadow-xs">
+<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+<span>QUIET</span>
+</div>
+</div>
+<!-- Freshness & Sync -->
+<div class="flex items-center gap-2 border-l border-black/10 pl-5 text-xs text-slate">
+<span class="w-2 h-2 rounded-full bg-[#2E7D32]"></span>
+<span class="font-medium">Last updated: <span class="font-semibold text-ink tnum">01 Oct 2026, 15:45 IST</span></span>
+</div>
+<!-- Version Chip -->
+<div class="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-black/5 text-[11px] font-mono text-slate border border-black/5">
+              v0.4.0 · ds_20261001_v1
+            </div>
+</div>
+<!-- Micro Metric Highlights -->
+<div class="flex items-center gap-6 text-xs">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-semibold text-slate">Benchmark Spot (10g)</span>
+<span class="font-bold text-sm text-ink tnum">₹1,20,482.00</span>
+</div>
+<div class="h-6 w-px bg-black/10"></div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-semibold text-slate">MCX 30D Carry</span>
+<span class="font-bold text-sm text-ink tnum">+6.82% ann.</span>
+</div>
+<div class="h-6 w-px bg-black/10"></div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-semibold text-slate">Atm Vol (IV)</span>
+<span class="font-bold text-sm text-ink tnum">14.18%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= NEAREST MISS SPOTLIGHT CARD ================= -->
+<section class="bg-[#FBF3E0] rounded-xl border border-[#EAD7B2] p-5 shadow-xs transition-all relative overflow-hidden">
+<!-- Subtle Institutional Top Line Ribbon -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#B7862C]"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+<!-- Left Spotlight Details -->
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#B7862C] text-white text-[10px] font-bold tracking-wider uppercase">Attention · Nearest Miss</span>
+<span class="text-xs text-slate font-medium">Auto-Trigger Evaluation Engine</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-[#1E1E1E] flex items-center gap-2">
+<span>Nearest Miss: <span class="text-[#B7862C]">GOLDTEN-GOLDGUINEA</span></span>
+<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#2E7D32]/15 text-[#2E7D32]">QUIET</span>
+</h2>
+<!-- Metric readout with gate criteria -->
+<div class="flex flex-wrap items-center gap-4 text-xs">
+<div class="flex items-baseline gap-1.5">
+<span class="text-slate font-medium">Z-Score:</span>
+<span class="text-base font-bold text-[#1E1E1E] tnum">z = 1.67</span>
+<span class="text-slate/80 font-normal tnum">(entry target ≥ 2.00)</span>
+</div>
+<span class="text-black/20">|</span>
+<div class="flex items-center gap-1.5 text-slate font-medium">
+<span class="material-symbols-outlined text-[16px] text-[#B7862C]">fact_check</span>
+<span>Gate Audit: <strong class="text-[#1E1E1E]">10/12 gates passed</strong></span>
+</div>
+<span class="text-black/20">|</span>
+<div class="flex items-center gap-1.5 text-[#C62828] font-semibold">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+<span>Blocked by: <span class="font-mono text-xs">Z_BELOW_THRESHOLD</span></span>
+</div>
+</div>
+</div>
+<!-- Right: Visual Threshold Gauge & Quick Actions -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/75 p-3.5 rounded-lg border border-[#EAD7B2]/70">
+<!-- Visual Threshold bar -->
+<div class="w-48 space-y-1">
+<div class="flex justify-between text-[11px] font-medium text-slate">
+<span>Threshold Distance</span>
+<span class="font-bold text-[#1E1E1E] tnum">83.5%</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 83.5%"></div>
+</div>
+<div class="flex justify-between text-[9px] text-slate/70 tnum">
+<span>z = 0.0</span>
+<span class="text-[#B7862C] font-semibold">z = 1.67</span>
+<span>z = 2.0</span>
+</div>
+</div>
+<div class="h-8 w-px bg-black/10 hidden sm:block"></div>
+<!-- Inspect Button -->
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-2 bg-[#1E1E1E] text-white hover:bg-black rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">troubleshoot</span>
+<span>Inspect Gates</span>
+</button>
+<button class="p-2 border border-black/15 hover:bg-black/5 rounded text-black/70 hover:text-black transition-colors" title="Chart Relative Value">
+<span class="material-symbols-outlined text-[18px]">show_chart</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= 2x3 GRID OF 6 MCX GOLD PAIRS ================= -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-base font-bold text-[#1E1E1E]">MCX Cross-Contract Pairs</h3>
+<p class="text-xs text-slate">Real-time relative value matrix vs transaction cost hurdles</p>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<span class="text-slate">Showing 6 active contracts</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate/40"></span>
+<span class="font-mono text-slate">Sort: Absolute Z-Score</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+<!-- CARD 1: GOLDM-GOLDTEN -->
+<article class="bg-white rounded-xl border border-black/10 p-5 hover:border-black/25 transition-all shadow-xs flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDM-GOLDTEN</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Gold Mini (100g) vs Gold Ten (10g)</span>
+</div>
+<!-- Carry source badge -->
+<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-semibold uppercase tracking-wider">
+                  CURVE
+                </span>
+</div>
+<!-- Z-score & Metric Display -->
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#F7F5F0] p-3 rounded-lg border border-black/5">
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Z-Score</div>
+<div class="text-lg font-bold text-ink tnum">+0.82</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Indicative Spread</div>
+<div class="text-sm font-bold text-ink tnum">₹28.40 / 10g</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px]">Net edge vs hurdle:</span>
+<span class="font-semibold text-ink tnum">+₹18.40 / ₹42.00</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 43.8%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span>Current: 43.8%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<!-- Indicative range metrics -->
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹14.20 — ₹36.80</strong></span>
+<span class="text-[11px] tnum">HL Ratio: 0.94</span>
+</div>
+</div>
+<!-- Card Actions -->
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-black/5 hover:bg-black/10 rounded text-xs font-medium text-ink transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View Chart</span>
+</button>
+<button class="py-1.5 px-3 border border-black/10 hover:border-black/20 rounded text-xs font-medium text-slate hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Gates</span>
+</button>
+</div>
+</article>
+<!-- CARD 2: GOLDM-GOLDGUINEA -->
+<article class="bg-white rounded-xl border border-black/10 p-5 hover:border-black/25 transition-all shadow-xs flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDM-GOLDGUINEA</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Gold Mini (100g) vs Guinea (8g)</span>
+</div>
+<!-- Carry source badge FALLBACK -->
+<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold uppercase tracking-wider">
+                  FALLBACK
+                </span>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#F7F5F0] p-3 rounded-lg border border-black/5">
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Z-Score</div>
+<div class="text-lg font-bold text-ink tnum">-1.14</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Indicative Spread</div>
+<div class="text-sm font-bold text-ink tnum">₹-41.20 / 8g</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px]">Net edge vs hurdle:</span>
+<span class="font-semibold text-ink tnum">+₹22.10 / ₹38.50</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 57.4%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span>Current: 57.4%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹-52.00 — ₹-18.00</strong></span>
+<span class="text-[11px] tnum">HL Ratio: 0.88</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-black/5 hover:bg-black/10 rounded text-xs font-medium text-ink transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View Chart</span>
+</button>
+<button class="py-1.5 px-3 border border-black/10 hover:border-black/20 rounded text-xs font-medium text-slate hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Gates</span>
+</button>
+</div>
+</article>
+<!-- CARD 3: GOLDM-GOLDPETAL -->
+<article class="bg-white rounded-xl border border-black/10 p-5 hover:border-black/25 transition-all shadow-xs flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDM-GOLDPETAL</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Gold Mini (100g) vs Petal (1g)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-semibold uppercase tracking-wider">
+                  CURVE
+                </span>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#F7F5F0] p-3 rounded-lg border border-black/5">
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Z-Score</div>
+<div class="text-lg font-bold text-ink tnum">+0.45</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Indicative Spread</div>
+<div class="text-sm font-bold text-ink tnum">₹12.15 / 1g</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px]">Net edge vs hurdle:</span>
+<span class="font-semibold text-ink tnum">+₹9.60 / ₹46.00</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 20.8%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span>Current: 20.8%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹8.00 — ₹19.50</strong></span>
+<span class="text-[11px] tnum">HL Ratio: 0.65</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-black/5 hover:bg-black/10 rounded text-xs font-medium text-ink transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View Chart</span>
+</button>
+<button class="py-1.5 px-3 border border-black/10 hover:border-black/20 rounded text-xs font-medium text-slate hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Gates</span>
+</button>
+</div>
+</article>
+<!-- CARD 4: GOLDTEN-GOLDGUINEA (HIGHLIGHTED AS CLOSEST TRIGGER) -->
+<article class="bg-[#FDFBF7] rounded-xl border-2 border-[#B7862C]/60 p-5 hover:border-[#B7862C] transition-all shadow-sm flex flex-col justify-between space-y-4 relative">
+<span class="absolute -top-2.5 right-4 bg-[#B7862C] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-xs uppercase tracking-wider">
+              Closest to Entry (z=1.67)
+            </span>
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDTEN-GOLDGUINEA</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Gold Ten (10g) vs Guinea (8g)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-semibold uppercase tracking-wider">
+                  CURVE
+                </span>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#FBF3E0] p-3 rounded-lg border border-[#EAD7B2]">
+<div>
+<div class="text-[10px] uppercase font-semibold text-[#8C6400]">Z-Score</div>
+<div class="text-xl font-bold text-[#1E1E1E] tnum">+1.67</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-[#8C6400]">Indicative Spread</div>
+<div class="text-sm font-bold text-[#1E1E1E] tnum">₹34.80 / unit</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px] font-medium">Net edge vs hurdle:</span>
+<span class="font-bold text-[#B7862C] tnum">+₹31.50 / ₹35.00</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 90.0%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span class="font-semibold text-[#B7862C]">Current: 90.0%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹19.40 — ₹39.20</strong></span>
+<span class="text-[11px] text-[#2E7D32] font-semibold tnum">10/12 Gates</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-[#B7862C] hover:bg-[#A37424] text-white rounded text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-xs">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View RV Curve</span>
+</button>
+<button class="py-1.5 px-3 border border-[#B7862C]/40 hover:bg-[#FBF3E0] rounded text-xs font-semibold text-[#8C6400] transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Breakdown</span>
+</button>
+</div>
+</article>
+<!-- CARD 5: GOLDTEN-GOLDPETAL -->
+<article class="bg-white rounded-xl border border-black/10 p-5 hover:border-black/25 transition-all shadow-xs flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDTEN-GOLDPETAL</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Gold Ten (10g) vs Petal (1g)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold uppercase tracking-wider">
+                  FALLBACK
+                </span>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#F7F5F0] p-3 rounded-lg border border-black/5">
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Z-Score</div>
+<div class="text-lg font-bold text-ink tnum">-0.91</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Indicative Spread</div>
+<div class="text-sm font-bold text-ink tnum">₹-16.70 / 1g</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px]">Net edge vs hurdle:</span>
+<span class="font-semibold text-ink tnum">+₹14.20 / ₹40.00</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 35.5%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span>Current: 35.5%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹-26.00 — ₹-8.40</strong></span>
+<span class="text-[11px] tnum">HL Ratio: 0.72</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-black/5 hover:bg-black/10 rounded text-xs font-medium text-ink transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View Chart</span>
+</button>
+<button class="py-1.5 px-3 border border-black/10 hover:border-black/20 rounded text-xs font-medium text-slate hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Gates</span>
+</button>
+</div>
+</article>
+<!-- CARD 6: GOLDGUINEA-GOLDPETAL -->
+<article class="bg-white rounded-xl border border-black/10 p-5 hover:border-black/25 transition-all shadow-xs flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-base text-[#1E1E1E]">GOLDGUINEA-GOLDPETAL</h4>
+<span class="px-2 py-0.5 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold tracking-wider">QUIET</span>
+</div>
+<span class="text-xs text-slate">Guinea (8g) vs Petal (1g)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-semibold uppercase tracking-wider">
+                  CURVE
+                </span>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2 bg-[#F7F5F0] p-3 rounded-lg border border-black/5">
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Z-Score</div>
+<div class="text-lg font-bold text-ink tnum">+0.33</div>
+</div>
+<div>
+<div class="text-[10px] uppercase font-semibold text-slate">Indicative Spread</div>
+<div class="text-sm font-bold text-ink tnum">₹7.90 / unit</div>
+</div>
+</div>
+<!-- Net Edge vs Cost Hurdle Progress Bar -->
+<div class="mt-3.5 space-y-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate text-[11px]">Net edge vs hurdle:</span>
+<span class="font-semibold text-ink tnum">+₹6.50 / ₹39.00</span>
+</div>
+<div class="w-full bg-[#E5E7EB] h-2 rounded-full overflow-hidden">
+<div class="bg-[#B7862C] h-full rounded-full" style="width: 16.6%"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate/70 tnum">
+<span>Current: 16.6%</span>
+<span>Trigger Hurdle: 100%</span>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-black/5 flex items-center justify-between text-xs text-slate">
+<span>24h Range: <strong class="text-ink font-semibold tnum">₹3.10 — ₹14.80</strong></span>
+<span class="text-[11px] tnum">HL Ratio: 0.51</span>
+</div>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-2 bg-black/5 hover:bg-black/10 rounded text-xs font-medium text-ink transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">show_chart</span>
+<span>View Chart</span>
+</button>
+<button class="py-1.5 px-3 border border-black/10 hover:border-black/20 rounded text-xs font-medium text-slate hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Gates</span>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- Institutional Desk Notes / Execution Parameter Bar -->
+<section class="bg-white rounded-xl border border-black/10 p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-black/5 text-[#1E1E1E]">
+<span class="material-symbols-outlined text-[20px]">layers</span>
+</div>
+<div>
+<div class="font-bold text-ink">Statistical Hurdle Parameters (MCX Tax &amp; Stamp duty inclusive)</div>
+<div class="text-slate">Contract slippage modeled at 0.015% per leg · Mean-reversion half-life clamp: 4.2 trading sessions.</div>
+</div>
+</div>
+<div class="flex items-center gap-3 self-end md:self-auto shrink-0">
+<span class="text-[11px] font-mono text-slate">Audit Hash: #0x92f8a...c4</span>
+<a class="px-3 py-1.5 rounded border border-black/10 hover:bg-black/5 text-ink font-medium transition-colors" href="#audit">
+            Audit Parameters
+          </a>
+</div>
+</section>
+</main>
+</div>
+<!-- ================= PERSISTENT FOOTER (Institutional Disclaimer) ================= -->
+<footer class="w-full py-4 px-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-black border-t border-black/10 dark:border-white/10 z-30 font-body text-xs text-black/50 dark:text-white/50">
+<div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+<span class="font-headline text-xs font-semibold text-black/70 dark:text-white/70">AurumLens MCX Gold RV Engine</span>
+<span class="hidden sm:inline text-black/20">|</span>
+<span class="text-slate">Analytics only — not investment advice. AurumLens MCX Gold RV Engine. Real-time indicative feed for informational purposes only.</span>
+</div>
+<!-- Mandatory Footer Navigation Links from JSON blueprint -->
+<div class="flex items-center gap-5 shrink-0 text-black/60 dark:text-white/60">
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#methodology-specs">Methodology Specs</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#latency-sla">Latency SLA</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#audit-trail">Audit Trail</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#risk-disclosure">Risk Disclosure</a>
+</div>
+</footer>
+</body></html>

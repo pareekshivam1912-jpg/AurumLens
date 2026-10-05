@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 30, 30, 30;
+  --background-start-rgb: 253, 251, 247;
+  --background-end-rgb: 253, 251, 247;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #FDFBF7;
+  font-feature-settings: "tnum" on, "cv05" on;
+}
+
+/* Custom scrollbars for high-density fintech look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1EFEA;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1CFC7;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B7862C;
+}

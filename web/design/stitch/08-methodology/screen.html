@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AurumLens | Methodology, Mathematical Architecture &amp; Regulatory Bounds</title>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            ink: "#1E1E1E",
+            slate: "#4B5563",
+            "deep-gold": "#B7862C",
+            "gold-tint": "#FBF3E0",
+            panel: "#F7F5F0",
+            "quiet-green": "#2E7D32",
+            "alert-red": "#C62828",
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+      background-color: #FFFFFF;
+      color: #1E1E1E;
+    }
+    .font-mono-numbers {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Institutional custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F7F5F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B7862C;
+    }
+  </style>
+</head>
+<body class="bg-white text-ink antialiased min-h-screen flex flex-col">
+<!-- ================= TOP APP BAR ================= -->
+<header class="sticky top-0 z-30 flex items-center justify-between px-6 h-14 w-full bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-deep-gold text-2xl" data-icon="token">token</span>
+<span class="font-headline text-sm font-semibold text-black dark:text-white tracking-tight">AurumLens</span>
+</div>
+<div class="h-4 w-[1px] bg-black/10 dark:bg-white/10 hidden md:block"></div>
+<!-- Ticker Links -->
+<div class="hidden lg:flex items-center gap-5 text-xs font-medium uppercase tracking-wider font-headline">
+<span class="flex items-center gap-1.5 text-black dark:text-white font-semibold">
+<span class="inline-block w-2 h-2 rounded-full bg-quiet-green animate-pulse"></span>
+          MCX: GOLD (Active)
+        </span>
+<span class="text-black dark:text-white font-mono-numbers font-semibold">₹1,20,482.41</span>
+<span class="flex items-center gap-1 text-black/60 dark:text-white/60">
+<span class="material-symbols-outlined text-xs text-deep-gold" data-icon="bolt">bolt</span>
+          Live Feed (0.4s)
+        </span>
+</div>
+</div>
+<!-- Trailing Actions Cluster -->
+<div class="flex items-center gap-3">
+<div class="hidden sm:flex items-center gap-1.5 text-xs">
+<span class="px-2.5 py-1 rounded bg-panel text-slate border border-black/5 font-mono">SEBI L4: VERIFIED</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded text-black/60 hover:text-black dark:hover:text-white transition-colors" title="Filter Presets">
+<span class="material-symbols-outlined text-lg" data-icon="filter_alt">filter_alt</span>
+</button>
+<button class="p-1.5 rounded text-black/60 hover:text-black dark:hover:text-white transition-colors" title="Audit Tuning">
+<span class="material-symbols-outlined text-lg" data-icon="tune">tune</span>
+</button>
+<button class="p-1.5 rounded text-black/60 hover:text-black dark:hover:text-white transition-colors" title="Sync Checksum">
+<span class="material-symbols-outlined text-lg" data-icon="refresh">refresh</span>
+</button>
+</div>
+<div class="h-4 w-[1px] bg-black/10 dark:bg-white/10"></div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 text-xs font-semibold rounded bg-panel text-black hover:bg-black/5 transition-all duration-150 border border-black/10">
+          Paper Engine
+        </button>
+<button class="px-3 py-1.5 text-xs font-semibold rounded bg-black text-white hover:bg-black/90 transition-all duration-150 flex items-center gap-1.5 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet-green"></span>
+          Live Terminal
+        </button>
+</div>
+<!-- User avatar -->
+<div class="ml-2 pl-2 border-l border-black/10 dark:border-white/10 flex items-center gap-2" title="Chief Risk Officer Account">
+<div class="w-7 h-7 rounded-full bg-panel flex items-center justify-center border border-black/10 font-bold text-xs text-deep-gold">
+          CR
+        </div>
+</div>
+</div>
+</header>
+<!-- ================= MAIN LAYOUT WITH SIDEBAR ================= -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Fixed/Sticky SideNavBar Rail -->
+<aside class="w-64 shrink-0 bg-white dark:bg-black border-r border-black/10 dark:border-white/10 flex flex-col justify-between hidden md:flex">
+<!-- Upper Section -->
+<div class="p-4 space-y-6 overflow-y-auto">
+<!-- Sub-suite brand anchor -->
+<div class="px-2">
+<div class="flex items-center justify-between">
+<span class="font-headline text-xs uppercase tracking-wider font-semibold text-slate">Institutional Suite</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-tint text-deep-gold font-mono font-medium">MCX RV</span>
+</div>
+<p class="text-xs text-slate mt-0.5">Statistical Arbitrage &amp; Risk</p>
+</div>
+<!-- 9 Primary Nav Items -->
+<nav class="space-y-1">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="text-sm font-headline tracking-tight">Overview</span>
+</a>
+<!-- Pair Analysis -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="compare_arrows">compare_arrows</span>
+<span class="text-sm font-headline tracking-tight">Pair Analysis</span>
+</a>
+<!-- Backtest -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+<span class="text-sm font-headline tracking-tight">Backtest</span>
+</a>
+<!-- Calendar -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_today">calendar_today</span>
+<span class="text-sm font-headline tracking-tight">Calendar</span>
+</a>
+<!-- Alert Log -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications_active">notifications_active</span>
+<span class="text-sm font-headline tracking-tight">Alert Log</span>
+<span class="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-panel text-slate">0 Active</span>
+</a>
+<!-- Hedge Tools -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="shield">shield</span>
+<span class="text-sm font-headline tracking-tight">Hedge Tools</span>
+</a>
+<!-- Data Health -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="health_and_safety">health_and_safety</span>
+<span class="text-sm font-headline tracking-tight">Data Health</span>
+<span class="ml-auto w-2 h-2 rounded-full bg-quiet-green"></span>
+</a>
+<!-- Methodology (ACTIVE STATE - EXACT MATCH & STRICT HIGHLIGHT) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-black dark:text-white bg-black/5 dark:bg-white/10 border-l-4 border-deep-gold shadow-xs" href="#">
+<span class="material-symbols-outlined text-[20px] text-deep-gold" data-icon="menu_book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="text-sm font-headline tracking-tight font-semibold">Methodology</span>
+<span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-panel font-mono font-semibold text-deep-gold">v2.1</span>
+</a>
+<!-- Paper Trading -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="candlestick_chart">candlestick_chart</span>
+<span class="text-sm font-headline tracking-tight">Paper Trading</span>
+</a>
+</nav>
+<!-- CTA in sidebar -->
+<div class="pt-2">
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-black/15 bg-panel hover:bg-white text-ink text-xs font-semibold transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="file_download">file_download</span>
+            Export Report
+          </button>
+</div>
+</div>
+<!-- Footer Utilities -->
+<div class="p-4 border-t border-black/10 dark:border-white/10 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+<span class="text-xs font-headline tracking-tight">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span class="text-xs font-headline tracking-tight">Settings</span>
+</a>
+<div class="px-3 pt-2">
+<span class="text-[10px] text-slate font-mono block">Node: BOM-EQX-01 (MCX Coloc)</span>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN SCROLLABLE CONTENT CANVAS ================= -->
+<main class="flex-1 overflow-y-auto bg-white">
+<div class="max-w-[1360px] mx-auto p-6 md:p-8 space-y-10">
+<!-- HEADER SECTION -->
+<div class="space-y-4">
+<!-- Institutional Breadcrumb -->
+<div class="flex items-center gap-2 text-xs text-slate">
+<span class="hover:text-ink cursor-pointer">AurumLens</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="hover:text-ink cursor-pointer">Quantitative Research &amp; Governance</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-ink font-semibold">Methodology Architecture</span>
+</div>
+<!-- Main Title & Badges -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-2 border-b border-black/10">
+<div>
+<h1 class="text-2xl md:text-3xl font-headline font-bold text-ink tracking-tight">
+                Methodology, Mathematical Architecture &amp; Regulatory Bounds
+              </h1>
+<p class="text-sm text-slate mt-1.5 max-w-3xl leading-relaxed">
+                Complete specification of quantitative models, mathematical formulations, risk gates, and regulatory boundaries governing the AurumLens relative-value engine.
+              </p>
+</div>
+<!-- Action cluster & Integrity verification badges -->
+<div class="flex flex-wrap items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-panel hover:bg-black/5 border border-black/10 text-xs font-semibold text-ink transition-colors">
+<span class="material-symbols-outlined text-sm text-deep-gold" data-icon="verified">verified</span>
+                Verify Model Checksums
+              </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-ink text-white hover:bg-black/85 text-xs font-semibold transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="picture_as_pdf">picture_as_pdf</span>
+                Export Whitepaper (PDF)
+              </button>
+</div>
+</div>
+<!-- System Badges & Version Provenance Strip -->
+<div class="flex flex-wrap items-center gap-3 text-xs">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-panel border border-black/10 font-mono text-slate">
+<span class="w-2 h-2 rounded-full bg-deep-gold"></span>
+<span>Methodology Version: <strong>v2.1</strong></span>
+<span class="text-black/30">|</span>
+<span class="text-[11px] text-slate">Hash: sha256:4a9977a</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-panel border border-black/10 text-slate">
+<span class="material-symbols-outlined text-quiet-green text-sm" data-icon="security" data-weight="fill" style="font-variation-settings: 'FILL' 1;">security</span>
+<span>SEBI Algorithm Audit Grade: <strong class="text-quiet-green font-semibold">Level 4 Compliant</strong></span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold-tint text-deep-gold font-medium border border-deep-gold/20">
+<span class="material-symbols-outlined text-xs" data-icon="schedule">schedule</span>
+<span>Audited on: 18 Oct 2024 · MCX Circular 2024/712</span>
+</div>
+<div class="ml-auto inline-flex items-center gap-2 text-xs text-slate">
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-quiet-green"></span>
+<span class="font-mono">Engine Latency: 0.18ms</span>
+</span>
+</div>
+</div>
+</div>
+<!-- ================= SECTION 1: PIPELINE ARCHITECTURE FLOW ================= -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-black text-white">SECTION 01</span>
+<h2 class="text-base font-headline font-bold text-ink tracking-tight uppercase">
+                End-to-End Analytics Pipeline Architecture
+              </h2>
+</div>
+<span class="text-xs text-slate font-mono">9-Stage Deterministic Pipeline (Zero Side-Effects)</span>
+</div>
+<!-- Flow Diagram Canvas -->
+<div class="p-6 bg-panel rounded-xl border border-black/10 shadow-xs">
+<div class="mb-4 flex items-center justify-between text-xs text-slate">
+<span class="flex items-center gap-1 font-medium text-ink">
+<span class="material-symbols-outlined text-sm text-deep-gold" data-icon="account_tree">account_tree</span>
+                Execution Flow Graph (Strict Directed Acyclic Graph)
+              </span>
+<span class="font-mono text-[11px]">All stages audited against Look-Ahead Bias &amp; Inversion Errors</span>
+</div>
+<!-- Grid Flow of 9 stages -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+<!-- STEP 1 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 01</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="fingerprint">fingerprint</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Raw Ingestion</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  MCX Bhavcopy raw tick/eod ingested via direct multicast parser with cryptographic SHA-256 integrity hash stamp.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Feed: MCX Tick Data</span>
+<span class="text-quiet-green">Immutable Log</span>
+</div>
+</div>
+<!-- STEP 2 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 02 · R19</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="sanitizer">sanitizer</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Quality Filtration</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Price source validation: discard out-of-order sequence ticks, tag SUSPECT anomalies, reject staleness &gt; 250ms.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>SLA: &lt; 250ms staleness</span>
+<span class="text-deep-gold">Auto-Discard</span>
+</div>
+</div>
+<!-- STEP 3 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 03 · R16</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="balance">balance</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Purity &amp; Basis Normalization</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Converts contract specs to standard 999 fine gold / 10g basis. Normalizes 995 GOLDM up to 999 parity cleanly.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Target: 999 Fine Gold</span>
+<span class="font-semibold text-ink">10g Standard</span>
+</div>
+</div>
+<!-- STEP 4 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 04 · R17</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="date_range">date_range</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Tenor Pair Matching</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Evaluates synthetic pairs across Gold 1kg, Gold Mini, Gold Guinea with minimal tenor gap constraint (0–35d limit).
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Limit: 0–35 Expiry Days</span>
+<span class="text-slate">Min Vol Shift</span>
+</div>
+</div>
+<!-- STEP 5 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 05 · R18</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="trending_up">trending_up</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Implied Term Structure Carry</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Interpolates continuous log forward curve to deduct physical financing, RBI repo spread, and warehouse depository cost.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Metric: r_curve (Carry)</span>
+<span class="text-ink font-semibold">Log Basis</span>
+</div>
+</div>
+<!-- STEP 6 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 06 · R21</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="analytics">analytics</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Log Spread &amp; Rolling Z-Score</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Computes standardized spread z_t using strictly session t-1 rolling mean and volatility. Zero forward-looking bias.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Look-ahead: 0.00%</span>
+<span class="text-quiet-green font-semibold">Strict t-1</span>
+</div>
+</div>
+<!-- STEP 7 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 07 · R20</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="checklist_rtl">checklist_rtl</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">12-Gate Risk Waterfall</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Evaluates 12 independent quantitative safety filters: Corwin-Schultz liquidity, OI limits, delivery period margin locks.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Pass Condition: 12/12</span>
+<span class="text-alert-red font-semibold">Strict Fail-Safe</span>
+</div>
+</div>
+<!-- STEP 8 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 08 · FR17</span>
+<span class="material-symbols-outlined text-slate text-sm" data-icon="flaky">flaky</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Discrete Decision &amp; Nearest Miss</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Quiet-by-default output state. If any gate fails, system computes nearest miss distance metric instead of firing alerts.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Default State: QUIET</span>
+<span class="text-slate">Proximity Index</span>
+</div>
+</div>
+<!-- STEP 9 -->
+<div class="p-4 bg-white rounded-lg border border-black/10 hover:border-deep-gold transition-all relative group bg-gold-tint/10">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-deep-gold">STAGE 09 · AUDIT</span>
+<span class="material-symbols-outlined text-deep-gold text-sm" data-icon="lock">lock</span>
+</div>
+<h3 class="text-xs font-bold text-ink uppercase tracking-tight">Synthetic Paper Execution &amp; Evidence Pack</h3>
+<p class="text-[11px] text-slate mt-1 leading-snug">
+                  Generates synthetic paper simulated fill, checks zero-duplicate order locks, and publishes an immutable sha256 evidence record.
+                </p>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-mono text-slate">
+<span>Non-Execution Engine</span>
+<span class="text-deep-gold font-semibold font-mono">SEBI L4 Logged</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 2: MATHEMATICAL FORMULATIONS & QUANTITATIVE RIGOR ================= -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-black text-white">SECTION 02</span>
+<h2 class="text-base font-headline font-bold text-ink tracking-tight uppercase">
+                Mathematical Formulations &amp; Quantitative Rigor
+              </h2>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<span class="px-2 py-0.5 rounded bg-panel font-mono text-slate">Formal Peer-Reviewed Standard</span>
+</div>
+</div>
+<!-- Bento Grid of Math Formulations -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- FORMULA 1: Price Normalization (R16) -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 01 · RULE R16</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">Purity &amp; Weight Standardization</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Contract Basis &amp; Purity Normalization</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto">
+<div class="font-semibold text-base">
+                    P<span class="text-xs sub">norm</span> = P<span class="text-xs sub">quoted</span> × <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">10</span><span class="block text-xs">quote_basis_g</span></span> × <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">0.999</span><span class="block text-xs">purity</span></span>
+</div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-gold-tint/50 rounded-lg border border-deep-gold/20 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-deep-gold">
+<span class="material-symbols-outlined text-sm" data-icon="lightbulb">lightbulb</span>
+                    Key Invariant Principle
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Lower purity contracts (e.g. 995 purity GOLDM) normalize <strong>UPWARD</strong> to match the benchmark 999 fineness. Purity discrepancy formula verified via MCX circular on physical settlement adjustment factors.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">P_quoted:</span> Active tick price</div>
+<div><span class="text-ink font-semibold">quote_basis_g:</span> 10g or 1000g</div>
+<div><span class="text-ink font-semibold">purity:</span> 0.995 or 0.999 fine</div>
+</div>
+</div>
+<!-- FORMULA 2: Implied Term Structure Carry (R18) -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 02 · RULE R18</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">Cost of Carry &amp; Depository Decay</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Implied Term Structure Carry &amp; Tenor Shift Adjustment</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto space-y-2">
+<div class="font-semibold text-xs">
+                    r<span class="text-[10px] sub">curve</span> = <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">ln( P<span class="text-[9px]">far</span> / P<span class="text-[9px]">near</span> )</span><span class="block text-xs">(T<span class="text-[9px]">far</span> − T<span class="text-[9px]">near</span>) / 365</span></span>
+</div>
+<div class="text-xs text-slate">
+                    carry_adj = r<span class="text-[10px] sub">curve</span> × <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">(T<span class="text-[9px]">B</span> − T<span class="text-[9px]">A</span>)</span><span class="block text-xs">365</span></span>
+</div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-white rounded-lg border border-black/10 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-slate">
+<span class="material-symbols-outlined text-sm text-quiet-green" data-icon="check_circle">check_circle</span>
+                    Calendar Non-Arbitrage Guarantee
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Differentiates synthetic yield from pure mispricing. If the term structure inverts due to near-month physical squeeze, r_curve handles backwardation without corrupting mean-reversion expectations.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">T_far, T_near:</span> Calendar days</div>
+<div><span class="text-ink font-semibold">carry_adj:</span> Basis pt offset</div>
+<div><span class="text-ink font-semibold">Fallback:</span> RBI 91D T-Bill + 80bp</div>
+</div>
+</div>
+<!-- FORMULA 3: Log Spread & Rolling Z-Score (R21) -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 03 · RULE R21</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">Stationary Spread Modeling</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Log Synthetic Spread &amp; Strict t-1 Rolling Z-Score</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto space-y-2">
+<div class="font-semibold text-xs">
+                    s<span class="text-[10px] sub">t</span> = ln(P<span class="text-[9px] sub">norm,A</span>) − ln(P<span class="text-[9px] sub">norm,B</span>) + carry_adj
+                  </div>
+<div class="font-bold text-base text-ink">
+                    z<span class="text-xs sub">t</span> = <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-2 text-xs">s<span class="text-[10px]">t</span> − μ<span class="text-[10px]">t−1</span></span><span class="block text-xs">σ<span class="text-[10px]">t−1</span></span></span>
+</div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-gold-tint/50 rounded-lg border border-deep-gold/20 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-deep-gold">
+<span class="material-symbols-outlined text-sm" data-icon="lock_clock">lock_clock</span>
+                    No Look-Ahead Bias Guarantee
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Rolling mean (μ) and standard deviation (σ) are strictly computed on observations through session t−1. The current observation s_t never contaminates parameter estimators.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">μ_{t-1}:</span> Rolling 60-period mean</div>
+<div><span class="text-ink font-semibold">σ_{t-1}:</span> Rolling Welford std</div>
+<div><span class="text-ink font-semibold">Half-life:</span> 4.2h calibrated</div>
+</div>
+</div>
+<!-- FORMULA 4: Corwin-Schultz (2012) Spread Estimator -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 04 · LIQUIDITY GATE</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">High-Low Bid-Ask Filter</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Corwin-Schultz (2012) Spread Estimator</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto space-y-2">
+<div class="text-[11px] text-slate">
+                    β = ∑<span class="text-[9px]">j=0..1</span> [ln(H<span class="text-[9px]">t-j</span> / L<span class="text-[9px]">t-j</span>)]²,   γ = [ln(H<span class="text-[9px]">t-1,t</span> / L<span class="text-[9px]">t-1,t</span>)]²
+                  </div>
+<div class="font-bold text-xs text-ink">
+                    S = <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">2 ( e<span class="text-[9px]">α</span> − 1 )</span><span class="block text-xs">1 + e<span class="text-[9px]">α</span></span></span>,   where α = <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">√2β − √β</span><span class="block text-xs">3 − 2√2</span></span> − <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">γ</span><span class="block text-xs">3 − 2√2</span></span>
+</div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-white rounded-lg border border-black/10 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-slate">
+<span class="material-symbols-outlined text-sm text-quiet-green" data-icon="water_drop">water_drop</span>
+                    Robust Liquidity Fallback Gate
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Evaluates intraday effective bid-ask spread without relying solely on top-of-book depth. Rejects arbitrage signals whenever estimated spread exceeds 0.045% of nominal value.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">H_t, L_t:</span> High/Low bar</div>
+<div><span class="text-ink font-semibold">S:</span> Effective bid-ask %</div>
+<div><span class="text-ink font-semibold">Max Threshold:</span> 4.5 bps</div>
+</div>
+</div>
+<!-- FORMULA 5: Integer Lot Sizing via MILP (R22) -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 05 · RULE R22</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">Mixed-Integer Linear Programming</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Exact Integer Lot Matching via MILP</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto space-y-2">
+<div class="font-bold text-xs text-ink">
+                    min | n<span class="text-[9px]">A</span> × g<span class="text-[9px]">A</span> − n<span class="text-[9px]">B</span> × g<span class="text-[9px]">B</span> |
+                  </div>
+<div class="text-[11px] text-slate">
+                    subject to: n<span class="text-[9px]">A</span>, n<span class="text-[9px]">B</span> ∈ ℤ<span class="text-[9px]">+</span>  |  Total Margin ≤ Mandate  |  Residual ≤ 2.5g
+                  </div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-white rounded-lg border border-black/10 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-slate">
+<span class="material-symbols-outlined text-sm text-quiet-green" data-icon="tune">tune</span>
+                    Physical Weight Parity Optimization
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Eliminates unhedged physical grams when cross-trading Big Gold (1,000g) against Gold Mini (100g) or Guinea (8g). Ensures zero residual beta exposure beyond allowed threshold.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">n_A, n_B:</span> Integer lot count</div>
+<div><span class="text-ink font-semibold">g_A, g_B:</span> Contract grams</div>
+<div><span class="text-ink font-semibold">Max Slack:</span> ±2.5g fine gold</div>
+</div>
+</div>
+<!-- FORMULA 6: Deflated Sharpe Ratio (Bailey & López de Prado 2014) -->
+<div class="bg-panel rounded-xl border border-black/10 p-5 flex flex-col justify-between hover:border-black/20 transition-all">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-black/10">
+<span class="font-mono text-xs font-bold text-deep-gold">FORMULATION 06 · VALIDATION</span>
+<span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white text-slate border border-black/5">Overfitting &amp; Data-Mining Penalty</span>
+</div>
+<h3 class="text-sm font-bold text-ink mt-3">Deflated Sharpe Ratio (DSR) &amp; Trial Auditing</h3>
+<!-- Math Display Box -->
+<div class="my-4 p-4 bg-white rounded-lg border border-black/10 font-mono text-sm tracking-wide text-ink text-center shadow-inner overflow-x-auto">
+<div class="font-bold text-xs text-ink">
+                    DSR = Φ ( <span class="inline-block text-center align-middle mx-1"><span class="border-b border-ink block px-1 text-xs">( SR − SR<span class="text-[9px]">0</span> ) × √(T − 1)</span><span class="block text-xs">√( 1 − γ<span class="text-[9px]">3</span> SR + <span class="inline-block text-center"><span class="border-b border-ink block px-0.5 text-[9px]">γ<span class="text-[8px]">4</span> − 1</span><span class="block text-[9px]">4</span></span> SR² )</span></span> )
+                  </div>
+</div>
+<!-- Callout Annotation -->
+<div class="p-3 bg-gold-tint/50 rounded-lg border border-deep-gold/20 text-xs text-ink space-y-1">
+<div class="font-bold flex items-center gap-1.5 text-deep-gold">
+<span class="material-symbols-outlined text-sm" data-icon="policy">policy</span>
+                    Selection Bias Rigor
+                  </div>
+<p class="text-[11px] text-slate leading-relaxed">
+                    Penalizes selection bias across all backtested trial variations logged in the registry ledger. Only strategies exhibiting DSR &gt; 0.95 with non-normal skewness (γ3) and kurtosis (γ4) survive to paper simulation.
+                  </p>
+</div>
+</div>
+<!-- Variable Dictionary -->
+<div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-3 gap-2 text-[10px] font-mono text-slate">
+<div><span class="text-ink font-semibold">SR_0:</span> Expected max trial SR</div>
+<div><span class="text-ink font-semibold">γ3, γ4:</span> Higher moments</div>
+<div><span class="text-ink font-semibold">Passing Bound:</span> DSR ≥ 0.95</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 3: PRODUCT BOUNDARIES & HARD REGULATORY PROHIBITIONS ================= -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-black text-white">SECTION 03</span>
+<h2 class="text-base font-headline font-bold text-ink tracking-tight uppercase">
+                Product Boundaries &amp; Hard Regulatory Prohibitions (R1–R15 Matrix)
+              </h2>
+</div>
+<span class="text-xs text-slate font-mono">SEBI Master Circular Algorithms Reg 2024</span>
+</div>
+<!-- 4 Distinctive Governance Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- GOVERNANCE CARD 1 -->
+<div class="p-5 bg-panel rounded-xl border border-black/10 relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-deep-gold"></div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-ink border border-black/5 font-semibold">Prohibition R01 · Structural Invariant</span>
+<span class="material-symbols-outlined text-deep-gold text-lg" data-icon="lock">lock</span>
+</div>
+<h3 class="text-sm font-bold text-ink tracking-tight">Pure Relative-Value Arbitrage (No Directional Speculation)</h3>
+<p class="text-xs text-slate mt-2 leading-relaxed">
+                  AurumLens models <strong>relative spread mean-reversion only</strong>. The algorithmic engine contains zero directional indicators (such as RSI, MACD, or Moving Average crossovers on single legs) and will never forecast absolute MCX gold price levels. Both long and short legs are strictly paired to cancel beta.
+                </p>
+</div>
+<div class="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-[11px] font-mono">
+<span class="text-slate">Directional Exposure Target:</span>
+<span class="font-bold text-ink">Beta = 0.00 ± 0.02</span>
+</div>
+</div>
+<!-- GOVERNANCE CARD 2 -->
+<div class="p-5 bg-panel rounded-xl border border-black/10 relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-alert-red"></div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-ink border border-black/5 font-semibold">Prohibition R04 · Regulatory Isolation</span>
+<span class="material-symbols-outlined text-alert-red text-lg" data-icon="block">block</span>
+</div>
+<h3 class="text-sm font-bold text-ink tracking-tight">Absolute Isolation from Real-Money Broker Execution</h3>
+<p class="text-xs text-slate mt-2 leading-relaxed">
+                  The system operates exclusively as an institutional analytical decision-support workspace and synthetic paper execution simulator. Direct Exchange FIX protocol bridges, automated OMS/RMS routing, and interactive broker credentials are hard-coded as disabled within current architecture builds.
+                </p>
+</div>
+<div class="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-[11px] font-mono">
+<span class="text-slate">Execution Adapter Status:</span>
+<span class="font-bold text-alert-red">DISABLED (Paper Engine Only)</span>
+</div>
+</div>
+<!-- GOVERNANCE CARD 3 -->
+<div class="p-5 bg-panel rounded-xl border border-black/10 relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-deep-gold"></div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-ink border border-black/5 font-semibold">Prohibition R09 · Audit Integrity</span>
+<span class="material-symbols-outlined text-slate text-lg" data-icon="code_blocks">code_blocks</span>
+</div>
+<h3 class="text-sm font-bold text-ink tracking-tight">Immutable Pure Functions (Zero Client Math)</h3>
+<p class="text-xs text-slate mt-2 leading-relaxed">
+                  Zero analytical formulas or mathematical transforms are permitted inside client-side JavaScript or database view definitions. 100% of calculations are executed within audited, side-effect-free deterministic Rust/Python pure kernels possessing 100% test branch coverage and SHA-256 binary validation.
+                </p>
+</div>
+<div class="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-[11px] font-mono">
+<span class="text-slate">Client Computation Policy:</span>
+<span class="font-bold text-quiet-green">Strict Presentation Layer Only</span>
+</div>
+</div>
+<!-- GOVERNANCE CARD 4 -->
+<div class="p-5 bg-panel rounded-xl border border-black/10 relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-quiet-green"></div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-ink border border-black/5 font-semibold">Prohibition R14 · Fail-Safe Architecture</span>
+<span class="material-symbols-outlined text-quiet-green text-lg" data-icon="shield">shield</span>
+</div>
+<h3 class="text-sm font-bold text-ink tracking-tight">Quiet By Default (Fail-Safe Defense In Depth)</h3>
+<p class="text-xs text-slate mt-2 leading-relaxed">
+                  If any single risk gate among the 12 fails, if tick latency exceeds 250ms, or if MCX circular bounds drift, the pipeline instantly enters a silent <strong>QUIET</strong> state. The engine outputs detailed nearest-miss diagnostic vectors instead of triggering false-positive alerts.
+                </p>
+</div>
+<div class="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-[11px] font-mono">
+<span class="text-slate">Default Output Mode:</span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-quiet-green/10 text-quiet-green font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet-green"></span>
+                  QUIET (Safe State)
+                </span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 4: AUDIT LOG & COMPLIANCE SEAL ================= -->
+<section class="p-5 bg-panel rounded-xl border border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-white border border-black/10 flex items-center justify-center shrink-0 text-deep-gold">
+<span class="material-symbols-outlined text-2xl" data-icon="policy">policy</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-ink uppercase tracking-tight">Regulatory Certification Stamp &amp; Model Audit Pass</h4>
+<p class="text-xs text-slate">SEBI Algorithm Audit Level 4 compliant under Circular SEBI/HO/MRD/DP/CIR/P/2021/658. Certified for Institutional Testing.</p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<span class="text-[11px] font-mono text-slate">Digital Signature: 0x9f884a...b21c</span>
+<span class="px-2.5 py-1 rounded bg-quiet-green text-white font-mono text-xs font-semibold">VERIFIED PASS</span>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- ================= INSTITUTIONAL PERSISTENT FOOTER ================= -->
+<footer class="w-full py-4 px-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-black border-t border-black/10 dark:border-white/10 shrink-0">
+<div class="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+<span class="font-headline text-xs font-semibold text-black/70 dark:text-white/70">AurumLens</span>
+<span class="hidden sm:inline text-black/30">•</span>
+<span class="font-body text-xs text-black/50 dark:text-white/50">
+        Analytics only — not investment advice. AurumLens MCX Gold RV Engine. Real-time indicative feed for informational purposes only.
+      </span>
+</div>
+<!-- Mandatory Institutional Links -->
+<div class="flex items-center gap-6 text-xs text-black/60 dark:text-white/60 font-body">
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#">Methodology Specs</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#">Latency SLA</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#">Audit Trail</a>
+<a class="hover:text-black dark:hover:text-white transition-colors underline" href="#">Risk Disclosure</a>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AurumLens MCX Gold RV Suite — Backtest &amp; Attribution</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            ink: "#1E1E1E",
+            slate: "#4B5563",
+            "deep-gold": "#B7862C",
+            "gold-tint": "#FBF3E0",
+            panel: "#F7F5F0",
+            "quiet-green": "#2E7D32",
+            "alert-red": "#C62828"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    body {
+      color: #1E1E1E;
+      background-color: #FFFFFF;
+      font-family: 'Inter', sans-serif;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F7F5F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
+  </style>
+</head>
+<body class="bg-white text-ink antialiased min-h-screen flex flex-col selection:bg-gold-tint selection:text-deep-gold">
+<!-- TOP UTILITY / NAV BAR -->
+<header class="sticky top-0 z-30 flex items-center justify-between px-6 h-14 w-full bg-white border-b border-black/10">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded bg-ink flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[17px] text-[#B7862C]" style="font-variation-settings: 'FILL' 1;">candlestick_chart</span>
+</div>
+<div>
+<span class="font-headline text-sm font-semibold tracking-tight text-ink">AurumLens</span>
+<span class="text-xs text-black/50 ml-1.5 font-normal hidden sm:inline">MCX Gold RV Suite</span>
+</div>
+</div>
+<div class="h-4 w-px bg-black/10"></div>
+<!-- Real-Time Indicative Status Chips -->
+<div class="flex items-center gap-2 text-xs">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F7F5F0] border border-black/5">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet-green animate-pulse"></span>
+<span class="font-medium text-ink">MCX: GOLD (Active)</span>
+<span class="tabular-nums font-semibold text-ink">₹1,20,482.41</span>
+<span class="tabular-nums text-quiet-green text-[11px] font-medium">+0.34%</span>
+</div>
+<div class="hidden md:flex items-center gap-1 text-black/60 px-2 py-1 bg-black/5 rounded text-[11px]">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>Live Feed (0.4s)</span>
+</div>
+</div>
+</div>
+<!-- Right utility controls -->
+<div class="flex items-center gap-2.5">
+<div class="hidden lg:flex items-center gap-1.5 mr-2">
+<button class="px-2.5 py-1 text-xs font-medium text-black/70 hover:text-ink hover:bg-black/5 rounded transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>Paper Engine</span>
+</button>
+<button class="px-3 py-1 text-xs font-semibold text-white bg-ink hover:bg-black/80 rounded transition-all flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-deep-gold"></span>
+<span>Live Terminal</span>
+</button>
+</div>
+<div class="h-4 w-px bg-black/10 hidden sm:block"></div>
+<div class="flex items-center gap-1 text-black/60">
+<button class="p-1.5 hover:text-ink hover:bg-black/5 rounded transition-colors" title="Filter Settings">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+</button>
+<button class="p-1.5 hover:text-ink hover:bg-black/5 rounded transition-colors" title="System Tuning">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="p-1.5 hover:text-ink hover:bg-black/5 rounded transition-colors" title="Refresh Telemetry">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<div class="flex items-center gap-2 pl-2 border-l border-black/10">
+<div class="w-7 h-7 rounded-full bg-gold-tint border border-deep-gold/30 flex items-center justify-center text-xs font-bold text-deep-gold" title="Chief Risk Officer Account">
+          CR
+        </div>
+</div>
+</div>
+</header>
+<!-- APP SHELL CONTAINER (Sidebar + Main Viewport) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- LEFT SIDEBAR NAVIGATION (9 Tabs from JSON + Anchors) -->
+<aside class="fixed top-14 left-0 bottom-0 z-20 w-64 bg-white border-r border-black/10 flex flex-col justify-between shrink-0">
+<div class="p-4 space-y-4 overflow-y-auto">
+<!-- Mandate Badge -->
+<div class="p-3 bg-[#F7F5F0] rounded-lg border border-black/5">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-semibold tracking-wider uppercase text-black/50">Mandate Pod</span>
+<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-quiet-green bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
+<span class="w-1 h-1 rounded-full bg-quiet-green"></span> ACTIVE
+            </span>
+</div>
+<div class="mt-1 font-headline text-xs font-semibold text-ink flex items-center justify-between">
+<span>MCX Arb-Desk 01</span>
+<span class="text-[11px] text-black/50 font-normal tabular-nums">3.8ms</span>
+</div>
+</div>
+<!-- 9 Navigation Items -->
+<nav class="space-y-1 font-headline font-body text-sm tracking-tight">
+<!-- 1. Overview -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- 2. Pair Analysis -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">compare_arrows</span>
+<span>Pair Analysis</span>
+</a>
+<!-- 3. Backtest (ACTIVE MATCHING DESIGN PROTOCOL) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-black bg-black/5 transition-all duration-150 active:scale-[0.99] border-l-2 border-deep-gold" href="#">
+<span class="material-symbols-outlined text-deep-gold" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-semibold text-ink">Backtest</span>
+<span class="ml-auto text-[10px] font-bold text-deep-gold bg-gold-tint px-1.5 py-0.5 rounded">WF-ATTRIB</span>
+</a>
+<!-- 4. Calendar -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">calendar_today</span>
+<span>Calendar</span>
+</a>
+<!-- 5. Alert Log -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-black/50">notifications_active</span>
+<span>Alert Log</span>
+</div>
+<span class="text-[10px] font-semibold text-alert-red bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">2</span>
+</a>
+<!-- 6. Hedge Tools -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">shield</span>
+<span>Hedge Tools</span>
+</a>
+<!-- 7. Data Health -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">health_and_safety</span>
+<span>Data Health</span>
+</a>
+<!-- 8. Methodology -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">menu_book</span>
+<span>Methodology</span>
+</a>
+<!-- 9. Paper Trading -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">candlestick_chart</span>
+<span>Paper Trading</span>
+</a>
+</nav>
+</div>
+<!-- Bottom SideNav CTA & Footer links -->
+<div class="p-4 border-t border-black/10 space-y-3 bg-white">
+<button class="w-full py-2 px-3 bg-deep-gold hover:bg-[#a37525] text-white rounded-lg text-xs font-semibold tracking-tight shadow-sm flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Export Report</span>
+</button>
+<div class="flex items-center justify-between text-xs text-black/60 pt-1">
+<a class="flex items-center gap-1 hover:text-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">help</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-1 hover:text-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- MAIN SCROLLABLE CONTENT CANVAS (Offset by 64 Tailwind w-64) -->
+<main class="ml-64 flex-1 overflow-y-auto bg-white p-6 space-y-6">
+<!-- SUB-HEADER / BREADCRUMB & AUDIT CONTROLS -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-black/10">
+<div>
+<div class="flex items-center gap-2 text-xs text-black/50 font-medium mb-1">
+<span>MCX Gold RV Suite</span>
+<span>/</span>
+<span class="text-ink font-semibold">Walk-Forward Backtesting &amp; Attribution</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-ink">Walk-Forward Backtesting &amp; Performance Attribution</h1>
+<p class="text-xs text-slate mt-0.5">Anchored Relative Value mean-reversion model across MCX Gold (Big, Mini, Guinea, Petal) physical delivery spreads.</p>
+</div>
+<div class="flex flex-wrap items-center gap-2.5">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#F7F5F0] border border-black/10 text-xs text-black/70">
+<span class="material-symbols-outlined text-[16px] text-deep-gold">verified</span>
+<span class="font-mono text-[11px]">Dataset: ds_20261001_v1</span>
+<span class="text-black/30">|</span>
+<span class="font-mono text-[11px]">Config: v0.4.0 (sha: 4a9977a)</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg border border-black/10 hover:border-black/30 text-ink text-xs font-semibold bg-white flex items-center gap-1.5 shadow-sm transition-all hover:bg-black/5">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Audit Hash</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-ink hover:bg-black/90 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[15px]">refresh</span>
+<span>Re-run Model</span>
+</button>
+</div>
+</div>
+<!-- KEY METRIC RIBBON (5 KPI Cards) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+<!-- KPI 1: Net Strategy P&L -->
+<div class="p-4 rounded-xl border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)] relative overflow-hidden">
+<div class="flex items-center justify-between text-xs text-black/50 mb-1">
+<span class="font-medium">Net Strategy P&amp;L</span>
+<span class="material-symbols-outlined text-[16px] text-quiet-green">trending_up</span>
+</div>
+<div class="tabular-nums font-bold text-xl text-ink tracking-tight">+₹48,250.00</div>
+<div class="mt-2 flex items-center gap-1.5">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-50 text-quiet-green border border-green-200">
+              QUIET
+            </span>
+<span class="text-[11px] text-slate">Net of all slippage &amp; CTT</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-quiet-green"></div>
+</div>
+<!-- KPI 2: Sharpe Ratio -->
+<div class="p-4 rounded-xl border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)] relative overflow-hidden">
+<div class="flex items-center justify-between text-xs text-black/50 mb-1">
+<span class="font-medium">Sharpe Ratio</span>
+<span class="material-symbols-outlined text-[16px] text-deep-gold">analytics</span>
+</div>
+<div class="tabular-nums font-bold text-xl text-ink tracking-tight">1.48</div>
+<div class="mt-2 flex items-center gap-1">
+<span class="text-[11px] text-slate">Annualized · Rf: 6.50% MIBOR</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-deep-gold"></div>
+</div>
+<!-- KPI 3: Deflated Sharpe Ratio (DSR) -->
+<div class="p-4 rounded-xl border border-black/10 bg-[#F7F5F0] relative overflow-hidden">
+<div class="flex items-center justify-between text-xs text-black/60 mb-1">
+<span class="font-medium">Deflated Sharpe (DSR)</span>
+<span class="material-symbols-outlined text-[16px] text-black/50" title="Bailey &amp; López de Prado standard">info</span>
+</div>
+<div class="tabular-nums font-bold text-xl text-ink tracking-tight">0.8842</div>
+<div class="mt-1.5 text-[10px] text-slate leading-tight">
+            N_trials = 12 · Non-overfit test passed
+          </div>
+</div>
+<!-- KPI 4: Hit Rate / Win Rate -->
+<div class="p-4 rounded-xl border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<div class="flex items-center justify-between text-xs text-black/50 mb-1">
+<span class="font-medium">Hit Rate / Win Rate</span>
+<span class="material-symbols-outlined text-[16px] text-black/40">target</span>
+</div>
+<div class="tabular-nums font-bold text-xl text-ink tracking-tight">68.2%</div>
+<div class="mt-2 flex items-center justify-between text-[11px] text-slate">
+<span>15/22 wins</span>
+<span class="font-semibold text-ink">Profit Factor: 2.14</span>
+</div>
+</div>
+<!-- KPI 5: Max Drawdown -->
+<div class="p-4 rounded-xl border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<div class="flex items-center justify-between text-xs text-black/50 mb-1">
+<span class="font-medium">Max Drawdown</span>
+<span class="material-symbols-outlined text-[16px] text-alert-red">arrow_downward</span>
+</div>
+<div class="tabular-nums font-bold text-xl text-ink tracking-tight">₹8,400.00</div>
+<div class="mt-2 flex items-center justify-between text-[11px] text-slate">
+<span>3.2% of peak equity</span>
+<span class="text-quiet-green font-medium">9 sessions to recov.</span>
+</div>
+</div>
+</section>
+<!-- MAIN ANALYTICS ROW 1 - CUMULATIVE EQUITY CURVE VS TWO BASELINES -->
+<section class="rounded-xl border border-black/10 bg-white p-5 shadow-sm space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-ink">Cumulative Equity Curve &amp; Benchmark Attribution</h2>
+<span class="px-2 py-0.5 text-[10px] font-bold text-deep-gold bg-gold-tint rounded border border-deep-gold/30">OOS WALK-FORWARD</span>
+</div>
+<p class="text-xs text-slate mt-0.5">4 Consecutive Out-of-Sample Folds + 1 Untouched Holdout Period (Net of friction, slip, and exchange fees)</p>
+</div>
+<!-- Chart Mode Switcher -->
+<div class="flex items-center bg-[#F7F5F0] p-1 rounded-lg border border-black/5 text-xs">
+<button class="px-3 py-1 rounded bg-white font-semibold text-ink shadow-xs">Cumulative Equity</button>
+<button class="px-3 py-1 rounded text-black/60 hover:text-ink transition-colors font-medium">Drawdown Under-Water</button>
+<button class="px-3 py-1 rounded text-black/60 hover:text-ink transition-colors font-medium">Rolling Sharpe (60D)</button>
+</div>
+</div>
+<!-- Legend Toggles -->
+<div class="flex flex-wrap items-center gap-4 text-xs pt-1 pb-2 border-b border-black/5">
+<label class="flex items-center gap-2 cursor-pointer font-medium text-ink">
+<span class="w-3.5 h-1 rounded-full bg-deep-gold"></span>
+<span>AurumLens Net Walk-Forward (+₹48,250)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer text-black/60 hover:text-ink">
+<span class="w-3.5 h-0.5 border-t border-dashed border-black/40"></span>
+<span>Always-Quiet Baseline (₹0.00)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer text-black/60 hover:text-ink">
+<span class="w-3.5 h-2 rounded bg-black/10"></span>
+<span>Seeded Random Entry (50 Monte Carlo runs, -₹4,200 drag)</span>
+</label>
+<div class="ml-auto text-[11px] text-black/40 hidden xl:block">
+            Hover points for transaction audit stamps
+          </div>
+</div>
+<!-- HIGH-FIDELITY SVG EQUITY CURVE -->
+<div class="relative w-full h-80 bg-[#FAFAFA] rounded-lg border border-black/5 p-4 flex flex-col justify-between">
+<!-- Background Grid & Vertical Folds Overlay -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 300">
+<!-- Gridlines Y -->
+<line stroke="#E5E7EB" stroke-dasharray="3 3" stroke-width="1" x1="60" x2="980" y1="40" y2="40"></line>
+<line stroke="#E5E7EB" stroke-dasharray="3 3" stroke-width="1" x1="60" x2="980" y1="100" y2="100"></line>
+<line stroke="#E5E7EB" stroke-dasharray="3 3" stroke-width="1" x1="60" x2="980" y1="160" y2="160"></line>
+<line stroke="#1E1E1E" stroke-opacity="0.25" stroke-width="1.2" x1="60" x2="980" y1="220" y2="220"></line> <!-- Zero Line -->
+<line stroke="#E5E7EB" stroke-dasharray="3 3" stroke-width="1" x1="60" x2="980" y1="280" y2="280"></line>
+<!-- Fold Vertical Partition Boundaries -->
+<!-- Fold 1: 60 to 280 -->
+<rect fill="#000000" fill-opacity="0.01" height="260" width="220" x="60" y="20"></rect>
+<line stroke="#9CA3AF" stroke-dasharray="4 4" stroke-width="1" x1="280" x2="280" y1="20" y2="280"></line>
+<!-- Fold 2: 280 to 500 -->
+<line stroke="#9CA3AF" stroke-dasharray="4 4" stroke-width="1" x1="500" x2="500" y1="20" y2="280"></line>
+<!-- Fold 3: 500 to 720 -->
+<line stroke="#9CA3AF" stroke-dasharray="4 4" stroke-width="1" x1="720" x2="720" y1="20" y2="280"></line>
+<!-- Fold 4: 720 to 860 -->
+<line stroke="#B7862C" stroke-dasharray="2 2" stroke-width="1.5" x1="860" x2="860" y1="20" y2="280"></line>
+<!-- Frozen Holdout: 860 to 980 (highlighted tint) -->
+<rect fill="#FBF3E0" fill-opacity="0.55" height="260" width="120" x="860" y="20"></rect>
+<!-- Seeded Monte Carlo Envelope (Shaded gray drag around -₹4,200) -->
+<path d="M 60 220 
+                     C 150 225, 250 232, 380 238
+                     C 500 242, 650 248, 780 252
+                     C 860 256, 920 260, 980 265
+                     L 980 242
+                     C 920 238, 860 234, 780 230
+                     C 650 226, 500 222, 380 218
+                     C 250 214, 150 217, 60 220 Z" fill="#9CA3AF" fill-opacity="0.18"></path>
+<!-- Flat Always-Quiet Baseline at 0 -->
+<line stroke="#6B7280" stroke-dasharray="5 4" stroke-width="1.2" x1="60" x2="980" y1="220" y2="220"></line>
+<!-- Net Strategy P&L Curve (Gold #B7862C) -->
+<path d="M 60 220
+                     L 110 212
+                     L 150 216
+                     L 200 198
+                     L 240 188
+                     L 280 182
+                     L 340 186
+                     L 390 162
+                     L 450 148
+                     L 500 134
+                     L 560 140
+                     L 610 115
+                     L 670 94
+                     L 720 82
+                     L 760 90
+                     L 810 68
+                     L 860 62
+                     L 900 52
+                     L 940 46
+                     L 980 38" fill="none" stroke="#B7862C" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Area under gold curve -->
+<path d="M 60 220
+                     L 110 212 L 150 216 L 200 198 L 240 188 L 280 182
+                     L 340 186 L 390 162 L 450 148 L 500 134
+                     L 560 140 L 610 115 L 670 94 L 720 82
+                     L 760 90 L 810 68 L 860 62
+                     L 900 52 L 940 46 L 980 38
+                     L 980 220 Z" fill="url(#goldGradient)" opacity="0.1"></path>
+<!-- Gradients -->
+<defs>
+<lineargradient id="goldGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#B7862C"></stop>
+<stop offset="100%" stop-color="#FFFFFF"></stop>
+</lineargradient>
+</defs>
+<!-- Trade Win/Loss Dots along the line -->
+<circle cx="200" cy="198" fill="#2E7D32" r="3"></circle>
+<circle cx="240" cy="188" fill="#2E7D32" r="3"></circle>
+<circle cx="340" cy="186" fill="#C62828" r="3"></circle>
+<circle cx="450" cy="148" fill="#2E7D32" r="3"></circle>
+<circle cx="560" cy="140" fill="#C62828" r="3"></circle>
+<circle cx="670" cy="94" fill="#2E7D32" r="3"></circle>
+<circle cx="760" cy="90" fill="#C62828" r="3"></circle>
+<circle cx="860" cy="62" fill="#B7862C" r="3.5"></circle>
+<circle cx="980" cy="38" fill="#B7862C" r="4.5" stroke="#FFFFFF" stroke-width="1.5"></circle>
+</svg>
+<!-- Floating Callout Label for Terminal Net Return -->
+<div class="absolute right-6 top-6 bg-white border border-deep-gold/40 rounded-lg p-2 shadow-md">
+<div class="text-[10px] text-slate font-medium">Terminal Strategy Net</div>
+<div class="text-sm font-bold text-ink tabular-nums">+₹48,250.00</div>
+<div class="text-[10px] text-quiet-green font-semibold flex items-center gap-1">
+<span>Win Rate: 68.2%</span> · <span>Sharpe: 1.48</span>
+</div>
+</div>
+<!-- Y-Axis Ticks -->
+<div class="relative z-10 flex flex-col justify-between h-full text-[10px] text-black/40 font-mono select-none w-14">
+<span>+₹50k</span>
+<span>+₹35k</span>
+<span>+₹20k</span>
+<span class="font-semibold text-black/60">₹0 (Zero)</span>
+<span>-₹15k</span>
+</div>
+<!-- X-Axis Fold Labels -->
+<div class="relative z-10 flex justify-between pl-14 text-[11px] text-black/60 font-medium select-none pt-2">
+<div class="text-center w-48">
+<span class="block font-semibold text-ink">Fold 1</span>
+<span class="text-[10px] text-black/40">2024-Q4 Test (+₹9,400)</span>
+</div>
+<div class="text-center w-48">
+<span class="block font-semibold text-ink">Fold 2</span>
+<span class="text-[10px] text-black/40">2025-Q2 Test (+₹12,850)</span>
+</div>
+<div class="text-center w-48">
+<span class="block font-semibold text-ink">Fold 3</span>
+<span class="text-[10px] text-black/40">2025-Q4 Test (+₹14,100)</span>
+</div>
+<div class="text-center w-36">
+<span class="block font-semibold text-ink">Fold 4</span>
+<span class="text-[10px] text-black/40">2026-Q2 (+₹11,900)</span>
+</div>
+<div class="text-center w-36 bg-gold-tint/80 border border-deep-gold/20 rounded px-1 py-0.5">
+<span class="block font-bold text-deep-gold flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[13px]">lock</span> Holdout
+              </span>
+<span class="text-[10px] text-deep-gold font-medium">Frozen 2026-Q3</span>
+</div>
+</div>
+</div>
+</section>
+<!-- MAIN ANALYTICS ROW 2 - P&L ATTRIBUTION WATERFALL (Gross -> Net & Residuals) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- Left: Waterfall Breakdown Chart (65% width = 8 cols on 12-grid) -->
+<div class="lg:col-span-8 rounded-xl border border-black/10 bg-white p-5 shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-base font-bold text-ink">Friction &amp; Execution Waterfall Attribution</h2>
+<p class="text-xs text-slate mt-0.5">Stepwise bridge decomposing gross alpha down to net regulatory-cleared cash flow</p>
+</div>
+<span class="text-xs font-mono text-black/50 bg-[#F7F5F0] px-2 py-1 rounded">Corwin-Schultz Estimator</span>
+</div>
+<!-- Step Bars Grid -->
+<div class="space-y-3 pt-2">
+<!-- Step 1: Gross Trading P&L -->
+<div class="space-y-1">
+<div class="flex justify-between text-xs">
+<span class="font-semibold text-ink flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm bg-quiet-green"></span>
+                  Gross Model Trading Alpha
+                </span>
+<span class="font-bold tabular-nums text-quiet-green">+₹64,200.00</span>
+</div>
+<div class="h-3 w-full bg-[#F7F5F0] rounded-full overflow-hidden">
+<div class="h-full bg-quiet-green rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<!-- Step 2: Adverse Slippage (Bid-Ask Spread drag) -->
+<div class="space-y-1">
+<div class="flex justify-between text-xs">
+<span class="font-medium text-slate flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm bg-[#DC2626]"></span>
+                  Adverse Slippage (Corwin-Schultz Bid-Ask friction)
+                </span>
+<span class="font-medium tabular-nums text-[#DC2626]">-₹4,800.00</span>
+</div>
+<div class="h-2.5 w-full bg-[#F7F5F0] rounded-full overflow-hidden relative">
+<!-- Relative friction offset visualization -->
+<div class="h-full bg-[#DC2626] rounded-full ml-[85%]" style="width: 7.5%"></div>
+</div>
+</div>
+<!-- Step 3: Statutory & Regulatory Costs Breakdown -->
+<div class="p-3 bg-[#F7F5F0] rounded-lg border border-black/5 space-y-2">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-ink flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-alert-red">account_balance</span>
+                  Total Regulatory, Exchange &amp; Clearing Costs
+                </span>
+<span class="tabular-nums text-alert-red">-₹11,150.00</span>
+</div>
+<!-- Itemized Pills -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">MCX Exchange Fee</span>
+<span class="font-medium tabular-nums text-ink">₹2,140</span>
+</div>
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">CTT (Commodity Tax)</span>
+<span class="font-medium tabular-nums text-ink">₹4,820</span>
+</div>
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">SEBI Turnover Chg</span>
+<span class="font-medium tabular-nums text-ink">₹310</span>
+</div>
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">Stamp Duty (State)</span>
+<span class="font-medium tabular-nums text-ink">₹740</span>
+</div>
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">GST (18% on fees)</span>
+<span class="font-medium tabular-nums text-ink">₹1,340</span>
+</div>
+<div class="flex justify-between bg-white px-2 py-1 rounded border border-black/5">
+<span class="text-black/60">Institutional Brokerage</span>
+<span class="font-medium tabular-nums text-ink">₹1,800</span>
+</div>
+</div>
+</div>
+<!-- Step 4: Net Realized P&L -->
+<div class="space-y-1 pt-1">
+<div class="flex justify-between text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-deep-gold"></span>
+                  Net Realized Strategy P&amp;L (Audit Verified)
+                </span>
+<span class="font-bold tabular-nums text-deep-gold text-sm">+₹48,250.00</span>
+</div>
+<div class="h-3 w-full bg-[#F7F5F0] rounded-full overflow-hidden">
+<div class="h-full bg-deep-gold rounded-full" style="width: 75.1%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-slate pt-0.5">
+<span>Net Retention Ratio: 75.15%</span>
+<span>Friction Drag: 24.85%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Alpha vs Residual Gold Exposure Box (35% width = 4 cols) -->
+<div class="lg:col-span-4 rounded-xl border border-black/10 bg-white p-5 shadow-sm flex flex-col justify-between space-y-4">
+<div>
+<div class="flex items-center justify-between mb-1">
+<h2 class="text-base font-bold text-ink">Factor Attribution</h2>
+<span class="material-symbols-outlined text-deep-gold text-[18px]">balance</span>
+</div>
+<p class="text-xs text-slate">Decomposition into pure Relative Value spread mean-reversion vs underlying unhedged bullion beta drift.</p>
+</div>
+<!-- Attribution Gauges -->
+<div class="space-y-3 bg-[#F7F5F0] p-3.5 rounded-lg border border-black/5">
+<div>
+<div class="flex justify-between text-xs mb-1">
+<span class="font-semibold text-ink">RV Spread Mean-Reversion Alpha</span>
+<span class="font-bold tabular-nums text-deep-gold">+₹46,900.00</span>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate mb-1.5">
+<span>Core Strategy Signal</span>
+<span class="font-semibold text-ink">97.2% of return</span>
+</div>
+<div class="h-2 w-full bg-black/10 rounded-full overflow-hidden">
+<div class="h-full bg-deep-gold" style="width: 97.2%"></div>
+</div>
+</div>
+<div class="pt-2 border-t border-black/10">
+<div class="flex justify-between text-xs mb-1">
+<span class="font-medium text-slate">Residual Delta Drift (0.5g Lot Rounding)</span>
+<span class="font-medium tabular-nums text-ink">+₹1,350.00</span>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate mb-1.5">
+<span>Unavoidable lot discretization drift</span>
+<span>2.8% of return</span>
+</div>
+<div class="h-1.5 w-full bg-black/10 rounded-full overflow-hidden">
+<div class="h-full bg-black/40" style="width: 2.8%"></div>
+</div>
+</div>
+</div>
+<!-- Physical Hedge Efficiency Metric -->
+<div class="p-3 bg-white rounded-lg border border-black/10 flex items-center justify-between">
+<div>
+<div class="text-[11px] font-medium text-slate">Physical Hedge Efficiency</div>
+<div class="text-xs text-black/50">Variance neutralized via MCX pair ratio</div>
+</div>
+<div class="text-right">
+<div class="text-lg font-bold tabular-nums text-quiet-green">99.4%</div>
+<div class="text-[10px] text-quiet-green font-medium">R² Cointegrated</div>
+</div>
+</div>
+<div class="text-[11px] text-black/50 italic leading-tight">
+            *Residual beta drift is strictly constrained below 0.05 lot delta equivalent at all rebalance boundaries.
+          </div>
+</div>
+</section>
+<!-- WALK-FORWARD FOLDS TABLE & UNTOUCHED HOLDOUT VALIDATION -->
+<section class="space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h2 class="text-base font-bold text-ink">Walk-Forward Folds &amp; Holdout Robustness</h2>
+<p class="text-xs text-slate">Strict out-of-sample temporal slicing. Models trained solely on past data before forward inference.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate">Validation protocol:</span>
+<span class="text-xs font-semibold px-2 py-0.5 rounded bg-black/5 text-ink">Combinatorial Purged CV</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- 4 Out-of-Sample Folds (Table - 8 cols) -->
+<div class="lg:col-span-8 rounded-xl border border-black/10 bg-white overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-[#F7F5F0] text-black/70 font-semibold border-b border-black/10">
+<tr>
+<th class="py-2.5 px-4">Fold Identifier</th>
+<th class="py-2.5 px-3">Train Window</th>
+<th class="py-2.5 px-3">Test (OOS)</th>
+<th class="py-2.5 px-3 text-right">Trades</th>
+<th class="py-2.5 px-3 text-right">Win Rate</th>
+<th class="py-2.5 px-3 text-right">Net P&amp;L</th>
+<th class="py-2.5 px-4 text-right">Sharpe</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-black/5 text-slate tabular-nums">
+<!-- Fold 1 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-4 font-semibold text-ink flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-deep-gold"></span>
+                      Fold 1
+                    </td>
+<td class="py-3 px-3">2024-Q1 → Q3</td>
+<td class="py-3 px-3 font-medium text-ink">2024-Q4</td>
+<td class="py-3 px-3 text-right">5</td>
+<td class="py-3 px-3 text-right font-medium">60.0%</td>
+<td class="py-3 px-3 text-right font-semibold text-quiet-green">+₹9,400.00</td>
+<td class="py-3 px-4 text-right font-semibold text-ink">1.35</td>
+</tr>
+<!-- Fold 2 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-4 font-semibold text-ink flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-deep-gold"></span>
+                      Fold 2
+                    </td>
+<td class="py-3 px-3">2024-Q2 → 2025-Q1</td>
+<td class="py-3 px-3 font-medium text-ink">2025-Q2</td>
+<td class="py-3 px-3 text-right">6</td>
+<td class="py-3 px-3 text-right font-medium">66.7%</td>
+<td class="py-3 px-3 text-right font-semibold text-quiet-green">+₹12,850.00</td>
+<td class="py-3 px-4 text-right font-semibold text-ink">1.52</td>
+</tr>
+<!-- Fold 3 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-4 font-semibold text-ink flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-deep-gold"></span>
+                      Fold 3
+                    </td>
+<td class="py-3 px-3">2024-Q4 → 2025-Q3</td>
+<td class="py-3 px-3 font-medium text-ink">2025-Q4</td>
+<td class="py-3 px-3 text-right">5</td>
+<td class="py-3 px-3 text-right font-medium">80.0%</td>
+<td class="py-3 px-3 text-right font-semibold text-quiet-green">+₹14,100.00</td>
+<td class="py-3 px-4 text-right font-semibold text-ink">1.68</td>
+</tr>
+<!-- Fold 4 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-4 font-semibold text-ink flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-deep-gold"></span>
+                      Fold 4
+                    </td>
+<td class="py-3 px-3">2025-Q2 → 2026-Q1</td>
+<td class="py-3 px-3 font-medium text-ink">2026-Q2</td>
+<td class="py-3 px-3 text-right">6</td>
+<td class="py-3 px-3 text-right font-medium">66.7%</td>
+<td class="py-3 px-3 text-right font-semibold text-quiet-green">+₹11,900.00</td>
+<td class="py-3 px-4 text-right font-semibold text-ink">1.41</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-4 py-2 bg-[#FAFAFA] border-t border-black/5 text-[11px] text-black/50 flex items-center justify-between">
+<span>All folds incorporate 5-session purges to prevent autoregressive information leakage.</span>
+<span class="font-semibold text-ink">Mean OOS Sharpe: 1.49</span>
+</div>
+</div>
+<!-- Distinct 'Final Untouched Holdout' Card (4 cols) -->
+<div class="lg:col-span-4 rounded-xl border-2 border-deep-gold/40 bg-gold-tint/40 p-5 flex flex-col justify-between relative shadow-sm">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-deep-gold bg-white px-2 py-0.5 rounded border border-deep-gold/30">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                  OOS FROZEN AUDIT
+                </span>
+<span class="text-[11px] font-mono text-black/50">sha256: 9e3c7a</span>
+</div>
+<h3 class="font-bold text-sm text-ink">Final Untouched Holdout</h3>
+<p class="text-[11px] text-slate mt-0.5">Sealed vault partition strictly untouched during hyperparameter tuning.</p>
+<div class="mt-3 p-2.5 bg-white/80 rounded border border-deep-gold/20 text-xs space-y-1.5">
+<div class="flex justify-between">
+<span class="text-black/60">Frozen Window:</span>
+<span class="font-semibold text-ink">2026-06-01 → 2026-10-01</span>
+</div>
+<div class="flex justify-between">
+<span class="text-black/60">Trades Recorded:</span>
+<span class="font-semibold tabular-nums text-ink">4 Completed</span>
+</div>
+<div class="flex justify-between">
+<span class="text-black/60">Win Rate:</span>
+<span class="font-semibold tabular-nums text-quiet-green">75.0% (3/4)</span>
+</div>
+<div class="flex justify-between">
+<span class="text-black/60">Realized Holdout Net:</span>
+<span class="font-bold tabular-nums text-quiet-green">+₹8,820.00</span>
+</div>
+<div class="flex justify-between">
+<span class="text-black/60">Holdout Sharpe:</span>
+<span class="font-semibold tabular-nums text-ink">1.58</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-deep-gold/20 flex items-center justify-between text-xs">
+<span class="font-semibold text-slate">DSR Validation:</span>
+<span class="inline-flex items-center gap-1 font-bold text-quiet-green bg-green-50 px-2 py-0.5 rounded border border-green-200">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                PASS (p = 0.012)
+              </span>
+</div>
+</div>
+</div>
+</section>
+<!-- AUDITED TRANSACTIONS / TRADE LEDGER TABLE -->
+<section class="rounded-xl border border-black/10 bg-white overflow-hidden shadow-sm space-y-3 p-5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-ink">Audited Transaction Ledger</h2>
+<span class="text-xs text-black/50 font-mono">(Last 6 Institutional Fills)</span>
+</div>
+<p class="text-xs text-slate">Verified physical spread entries, z-score transitions, and net statutory realization.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 text-xs border border-black/10 rounded hover:bg-black/5 flex items-center gap-1 text-slate font-medium">
+<span class="material-symbols-outlined text-[15px]">filter_list</span>
+<span>Filter Pairs</span>
+</button>
+<button class="px-2.5 py-1 text-xs border border-black/10 rounded hover:bg-black/5 flex items-center gap-1 text-slate font-medium">
+<span class="material-symbols-outlined text-[15px]">file_download</span>
+<span>CSV Ledger</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-[#F7F5F0] text-black/70 font-semibold border-b border-black/10">
+<tr>
+<th class="py-2.5 px-3">Trade ID</th>
+<th class="py-2.5 px-3">Pair Mandate</th>
+<th class="py-2.5 px-3">Entry Date</th>
+<th class="py-2.5 px-3">Exit Date</th>
+<th class="py-2.5 px-2 text-right">Entry Z</th>
+<th class="py-2.5 px-2 text-right">Exit Z</th>
+<th class="py-2.5 px-2 text-right">Days</th>
+<th class="py-2.5 px-3">Exit Reason</th>
+<th class="py-2.5 px-3 text-right">Gross P&amp;L</th>
+<th class="py-2.5 px-3 text-right">Regulatory</th>
+<th class="py-2.5 px-3 text-right">Net P&amp;L</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-black/5 text-slate tabular-nums">
+<!-- Row 1 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-089</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDTEN / GOLDM</td>
+<td class="py-3 px-3">2026-09-14</td>
+<td class="py-3 px-3">2026-09-18</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">+2.42σ</td>
+<td class="py-3 px-2 text-right text-quiet-green font-mono font-medium">+0.18σ</td>
+<td class="py-3 px-2 text-right">4</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-quiet-green border border-green-200">
+                    REVERSION
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-quiet-green">+₹14,200</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹2,180</td>
+<td class="py-3 px-3 text-right font-bold text-quiet-green">+₹12,020.00</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-088</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDM / GOLDGUINEA</td>
+<td class="py-3 px-3">2026-09-02</td>
+<td class="py-3 px-3">2026-09-09</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">-2.15σ</td>
+<td class="py-3 px-2 text-right text-quiet-green font-mono font-medium">-0.05σ</td>
+<td class="py-3 px-2 text-right">7</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-quiet-green border border-green-200">
+                    REVERSION
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-quiet-green">+₹9,800</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹1,640</td>
+<td class="py-3 px-3 text-right font-bold text-quiet-green">+₹8,160.00</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-087</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDTEN / GOLDPETAL</td>
+<td class="py-3 px-3">2026-08-18</td>
+<td class="py-3 px-3">2026-08-28</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">+2.60σ</td>
+<td class="py-3 px-2 text-right text-slate font-mono font-medium">+1.85σ</td>
+<td class="py-3 px-2 text-right">10</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                    TIME_STOP
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-alert-red">-₹3,200</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹1,450</td>
+<td class="py-3 px-3 text-right font-bold text-alert-red">-₹4,650.00</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-086</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDTEN / GOLDM</td>
+<td class="py-3 px-3">2026-08-04</td>
+<td class="py-3 px-3">2026-08-07</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">-2.30σ</td>
+<td class="py-3 px-2 text-right text-quiet-green font-mono font-medium">+0.10σ</td>
+<td class="py-3 px-2 text-right">3</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-quiet-green border border-green-200">
+                    REVERSION
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-quiet-green">+₹11,400</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹1,950</td>
+<td class="py-3 px-3 text-right font-bold text-quiet-green">+₹9,450.00</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-085</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDM / GOLDGUINEA</td>
+<td class="py-3 px-3">2026-07-21</td>
+<td class="py-3 px-3">2026-07-25</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">+2.10σ</td>
+<td class="py-3 px-2 text-right text-slate font-mono font-medium">+1.40σ</td>
+<td class="py-3 px-2 text-right">4</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate border border-slate-300">
+                    UNSAFE_EXPIRY
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-quiet-green">+₹2,100</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹1,320</td>
+<td class="py-3 px-3 text-right font-bold text-quiet-green">+₹780.00</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-black/[0.01] transition-colors">
+<td class="py-3 px-3 font-mono font-medium text-ink">#TRD-2026-084</td>
+<td class="py-3 px-3 font-semibold text-ink">GOLDTEN / GOLDPETAL</td>
+<td class="py-3 px-3">2026-07-08</td>
+<td class="py-3 px-3">2026-07-14</td>
+<td class="py-3 px-2 text-right text-alert-red font-mono font-medium">+2.55σ</td>
+<td class="py-3 px-2 text-right text-quiet-green font-mono font-medium">-0.12σ</td>
+<td class="py-3 px-2 text-right">6</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-quiet-green border border-green-200">
+                    REVERSION
+                  </span>
+</td>
+<td class="py-3 px-3 text-right font-medium text-quiet-green">+₹15,600</td>
+<td class="py-3 px-3 text-right text-alert-red">-₹2,380</td>
+<td class="py-3 px-3 text-right font-bold text-quiet-green">+₹13,220.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- INSTITUTIONAL FOOTER -->
+<footer class="w-full py-4 px-2 border-t border-black/10 flex flex-col md:flex-row items-center justify-between gap-4 font-body text-xs text-black/50">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-deep-gold"></span>
+<span>Analytics only — not investment advice. AurumLens MCX Gold RV Engine. Real-time indicative feed for informational purposes only.</span>
+</div>
+<div class="flex items-center gap-4 font-medium text-black/60">
+<a class="hover:text-black transition-colors underline" href="#">Methodology Specs</a>
+<a class="hover:text-black transition-colors underline" href="#">Latency SLA</a>
+<a class="hover:text-black transition-colors underline" href="#">Audit Trail</a>
+<a class="hover:text-black transition-colors underline" href="#">Risk Disclosure</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

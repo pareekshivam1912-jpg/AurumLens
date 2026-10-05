@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-white" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Data Health &amp; Contract Specifications Trust Register | AurumLens Institutional</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {},
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.25rem;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .num-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Brand custom colors directly via CSS utility anchors */
+    .bg-panel { background-color: #F7F5F0; }
+    .bg-gold-tint { background-color: #FBF3E0; }
+    .text-ink { color: #1E1E1E; }
+    .text-slate-custom { color: #4B5563; }
+    .text-deep-gold { color: #B7862C; }
+    .border-gold { border-color: rgba(183, 134, 44, 0.35); }
+    .bg-deep-gold { background-color: #B7862C; }
+  </style>
+</head>
+<body class="h-full bg-[#FFFFFF] text-[#1E1E1E] font-body flex flex-col antialiased selection:bg-[#FBF3E0] selection:text-[#B7862C]">
+<div class="flex h-screen overflow-hidden">
+<!-- ======================================================== -->
+<!-- 1. LEFT SIDE NAVIGATION (Shared Component: SideNavBar)    -->
+<!-- ======================================================== -->
+<aside class="fixed top-0 left-0 bottom-0 z-40 w-64 h-screen flex flex-col justify-between shrink-0 bg-white border-r border-black/10">
+<!-- Top Branding Section -->
+<div class="p-4 border-b border-black/10">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-[#B7862C] flex items-center justify-center text-white font-bold text-sm shadow-sm">
+              AL
+            </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline text-sm font-bold tracking-tight text-black">AurumLens</span>
+<span class="text-[10px] font-semibold bg-[#FBF3E0] text-[#B7862C] px-1.5 py-0.2 rounded border border-[#B7862C]/20 uppercase">RV</span>
+</div>
+<p class="text-[11px] text-black/50 leading-tight">MCX Gold RV Suite</p>
+</div>
+</div>
+</div>
+<!-- Desk Tag Info -->
+<div class="bg-[#F7F5F0] rounded-md px-2.5 py-1.5 border border-black/5 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
+<span class="text-[11px] font-mono text-black/80 font-medium">Arb-Desk 01</span>
+</div>
+<span class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded text-black/60 border border-black/5">3.8ms</span>
+</div>
+</div>
+<!-- Main Navigation Menu -->
+<nav class="flex-1 overflow-y-auto px-3 py-3 space-y-1 font-headline text-sm tracking-tight">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Pair Analysis -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">compare_arrows</span>
+<span>Pair Analysis</span>
+</a>
+<!-- Backtest -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">history</span>
+<span>Backtest</span>
+</a>
+<!-- Calendar -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">calendar_today</span>
+<span>Calendar</span>
+</a>
+<!-- Alert Log -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-black/50">notifications_active</span>
+<span>Alert Log</span>
+</div>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-[#C62828]/10 text-[#C62828] font-bold">2</span>
+</a>
+<!-- Hedge Tools -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">shield</span>
+<span>Hedge Tools</span>
+</a>
+<!-- Data Health (ACTIVE STATE) -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-black bg-[#FBF3E0] border border-[#B7862C]/30 shadow-[0_1px_2px_rgba(0,0,0,0.02)]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#B7862C]" style="font-variation-settings: 'FILL' 1;">health_and_safety</span>
+<span class="text-black font-semibold">Data Health</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#B7862C]"></span>
+</a>
+<!-- Methodology -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">menu_book</span>
+<span>Methodology</span>
+</a>
+<!-- Paper Trading -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-black/50">candlestick_chart</span>
+<span>Paper Trading</span>
+</a>
+</nav>
+<!-- Bottom Navigation & CTA -->
+<div class="p-3 border-t border-black/10 space-y-2">
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-lg bg-black text-white hover:bg-black/85 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Export Report</span>
+</button>
+<div class="pt-1 flex flex-col space-y-0.5">
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm text-black/40">help</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-normal text-black/60 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm text-black/40">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- ======================================================== -->
+<!-- MAIN WORKSPACE CONTAINER (Offset by sidebar w-64)       -->
+<!-- ======================================================== -->
+<div class="flex-1 flex flex-col pl-64 overflow-y-auto min-w-0 bg-[#FFFFFF]">
+<!-- ======================================================== -->
+<!-- 2. TOP UTILITY APP BAR (Shared Component: TopNavBar)     -->
+<!-- ======================================================== -->
+<header class="sticky top-0 z-30 flex items-center justify-between px-6 h-14 w-full bg-white border-b border-black/10 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<!-- Left Breadcrumb / Context -->
+<div class="flex items-center gap-2 font-headline text-xs text-black/50">
+<span class="font-medium text-black">AurumLens</span>
+<span>/</span>
+<span>MCX Gold RV Suite</span>
+<span>/</span>
+<span class="text-black font-semibold">Data Health &amp; Spec Trust</span>
+</div>
+<!-- Center Ticker & Realtime Ping -->
+<div class="hidden lg:flex items-center gap-3 bg-[#F7F5F0] border border-black/10 px-3 py-1 rounded-full text-xs font-mono">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#2E7D32] animate-pulse"></span>
+<span class="font-semibold text-black">MCX: GOLD (Active)</span>
+</div>
+<span class="text-black/30">|</span>
+<span class="num-tabular font-bold text-black">₹1,20,482.41</span>
+<span class="text-[#2E7D32] font-semibold text-[11px]">+0.34%</span>
+<span class="text-black/30">|</span>
+<span class="text-black/60 text-[11px]">Live Feed (0.4s)</span>
+</div>
+<!-- Right Trailing Actions & Profile -->
+<div class="flex items-center gap-2.5">
+<div class="flex items-center border border-black/10 rounded-lg p-0.5 bg-white">
+<button class="p-1.5 text-black/60 hover:text-black hover:bg-black/5 rounded transition-colors" title="Filter">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+</button>
+<button class="p-1.5 text-black/60 hover:text-black hover:bg-black/5 rounded transition-colors" title="Tune Engine">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="p-1.5 text-black/60 hover:text-black hover:bg-black/5 rounded transition-colors" title="Refresh Feed">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<button class="px-2.5 py-1.5 rounded-lg border border-black/15 text-xs font-headline font-medium text-black hover:bg-black/5 transition-colors">
+            Paper Engine
+          </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E1E1E] text-white text-xs font-headline font-medium hover:bg-black/90 transition-colors shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]"></span>
+<span>Live Terminal</span>
+</button>
+<!-- User Avatar Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-black/10">
+<div class="w-8 h-8 rounded-full bg-[#F7F5F0] border border-black/15 flex items-center justify-center font-mono text-xs font-semibold text-black" title="Chief Risk Officer Account">
+              CR
+            </div>
+</div>
+</div>
+</header>
+<!-- ======================================================== -->
+<!-- 3. PAGE HEADER & AUDIT MANIFEST HERO                     -->
+<!-- ======================================================== -->
+<section class="px-8 pt-7 pb-5 border-b border-black/10 bg-white">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+<div>
+<div class="flex items-center gap-3 mb-1.5">
+<h1 class="text-xl font-bold font-headline tracking-tight text-[#1E1E1E]">
+                Data Health &amp; Contract Specifications Trust Register
+              </h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/25">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]"></span>
+                DATA INTEGRITY: 98.4% (HEALTHY)
+              </span>
+</div>
+<p class="text-xs text-[#4B5563] max-w-3xl leading-relaxed">
+              Audit trail of MCX Bhavcopy ingestion integrity, price quality filters, and regulatory facts register with official verification statuses.
+            </p>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-lg border border-black/15 bg-white text-black hover:bg-black/5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">published_with_changes</span>
+<span>Re-run Verification Audit</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-[#B7862C] hover:bg-[#a67724] text-white transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">file_download</span>
+<span>Export Trust Manifest (JSON/CSV)</span>
+</button>
+</div>
+</div>
+<!-- Ingestion Checksum & Storage Bar -->
+<div class="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-black/5 text-[11px] font-mono text-black/60">
+<div class="flex items-center gap-2">
+<span class="text-black/40">CHECKSUM:</span>
+<span class="bg-[#F7F5F0] px-2 py-0.5 rounded text-black/80 border border-black/5 select-all">sha256:d8b72e5a9f37c4b019dc88701982ea94a09</span>
+<span class="text-black/30">•</span>
+<span>Immutable Supabase Bucket: <strong class="text-black font-semibold">bhavcopy-raw</strong></span>
+</div>
+<div class="flex items-center gap-4 text-black/50">
+<span>Last Run: <span class="text-black font-medium">01 Oct 2026, 17:30:12 IST</span></span>
+<span>Ingestion SLA: <span class="text-[#2E7D32] font-semibold">&lt; 250ms</span></span>
+</div>
+</div>
+</section>
+<!-- ======================================================== -->
+<!-- 4. MAIN BENTO GRID / 4-PANEL WORKSPACE                   -->
+<!-- ======================================================== -->
+<main class="flex-1 px-8 py-6 space-y-6 bg-white overflow-y-visible">
+<!-- ======================================================== -->
+<!-- PANEL 4 (Top Banner): SPEC MODE SWITCHER & DISCLAIMER   -->
+<!-- ======================================================== -->
+<div class="bg-[#F7F5F0] border border-black/10 rounded-xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-start md:items-center gap-3.5">
+<div class="w-9 h-9 rounded-lg bg-[#FBF3E0] border border-[#B7862C]/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#B7862C]">tune</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-headline text-xs uppercase tracking-wider font-bold text-black">R24 Spec Mode:</span>
+<div class="inline-flex rounded-lg border border-black/10 bg-white p-0.5 text-xs font-medium">
+<button class="px-2.5 py-1 rounded bg-[#B7862C] text-white font-semibold flex items-center gap-1 shadow-xs">
+<span>research</span>
+<span class="text-[9px] px-1 bg-white/20 rounded font-mono uppercase">ACTIVE</span>
+</button>
+<button class="px-2.5 py-1 rounded text-black/60 hover:text-black transition-colors">
+                      strict
+                    </button>
+</div>
+</div>
+<p class="text-xs text-[#4B5563] mt-1">
+<strong class="text-black">Research Mode Active:</strong> Unverified specifications permitted with watermark. In Strict Mode, any unverified spec (e.g. GOLDGUINEA purity dispute) immediately halts arb execution triggers.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<div class="text-right border-r border-black/10 pr-3.5 hidden sm:block">
+<p class="text-[10px] font-mono text-black/40 uppercase">Audit Standard</p>
+<p class="text-xs font-mono font-semibold text-black">SEBI Reg v4.2</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono bg-white border border-black/10 text-black">
+<span class="material-symbols-outlined text-xs text-[#2E7D32]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                Verified Compliance
+              </span>
+</div>
+</div>
+</div>
+<!-- ======================================================== -->
+<!-- PANEL 1: FACTS REGISTER (Contract Spec Verification)     -->
+<!-- ======================================================== -->
+<div class="bg-white border border-black/10 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<div class="px-6 py-4 border-b border-black/10 flex flex-wrap items-center justify-between gap-3 bg-[#F7F5F0]/60">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-black/70">fact_check</span>
+<h2 class="text-sm font-bold font-headline text-black">Contract Specifications Facts Register (R24 Spec Mode)</h2>
+<span class="text-[11px] font-mono bg-white px-2 py-0.5 rounded border border-black/10 text-black/70">5 Active Tenors</span>
+</div>
+<p class="text-xs text-black/50 mt-0.5">Verification hierarchy enforcing trading unit, quote basis, and physical delivery purities.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-mono text-black/50">Hierarchy: Official Exchange &gt; BIS Hallmark &gt; Refiner Spec</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="border-b border-black/10 bg-[#F7F5F0]/30 font-headline font-semibold text-black/60 uppercase tracking-wider text-[11px]">
+<th class="py-3 px-6">Symbol</th>
+<th class="py-3 px-4">Trading Unit</th>
+<th class="py-3 px-4">Quote Basis</th>
+<th class="py-3 px-4">Purity Standard</th>
+<th class="py-3 px-4">Verification Status</th>
+<th class="py-3 px-4">Official Reference</th>
+<th class="py-3 px-4">Last Verified</th>
+<th class="py-3 px-6 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-black/5 font-mono">
+<!-- Row 1: GOLDM -->
+<tr class="hover:bg-[#FBF3E0]/30 transition-colors">
+<td class="py-3.5 px-6 font-bold text-black font-headline">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#B7862C]"></span>
+<span>GOLDM</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-black">100g</td>
+<td class="py-3.5 px-4 text-black">10g</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded bg-black/5 font-semibold text-black">0.995</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                      VERIFIED_OFFICIAL
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-black/70 text-[11px]">MCX Circular MCX/TRD/724/2023</td>
+<td class="py-3.5 px-4 text-black/60 text-[11px]">01 Oct 2026</td>
+<td class="py-3.5 px-6 text-right font-headline">
+<button class="px-2.5 py-1 text-xs rounded border border-black/15 text-black hover:bg-black/5 transition-colors mr-1">Inspect Diff</button>
+<button class="px-2.5 py-1 text-xs rounded bg-black/5 text-black/40 cursor-not-allowed">Locked</button>
+</td>
+</tr>
+<!-- Row 2: GOLDTEN -->
+<tr class="hover:bg-[#FBF3E0]/30 transition-colors">
+<td class="py-3.5 px-6 font-bold text-black font-headline">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#B7862C]"></span>
+<span>GOLDTEN</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-black">10g</td>
+<td class="py-3.5 px-4 text-black">10g</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded bg-black/5 font-semibold text-black">0.999</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                      VERIFIED_OFFICIAL
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-black/70 text-[11px]">MCX Circular MCX/TRD/112/2024</td>
+<td class="py-3.5 px-4 text-black/60 text-[11px]">01 Oct 2026</td>
+<td class="py-3.5 px-6 text-right font-headline">
+<button class="px-2.5 py-1 text-xs rounded border border-black/15 text-black hover:bg-black/5 transition-colors mr-1">Inspect Diff</button>
+<button class="px-2.5 py-1 text-xs rounded bg-black/5 text-black/40 cursor-not-allowed">Locked</button>
+</td>
+</tr>
+<!-- Row 3: GOLDGUINEA (DISPUTED SPECIFICATION) -->
+<tr class="bg-[#C62828]/5 hover:bg-[#C62828]/10 transition-colors">
+<td class="py-3.5 px-6 font-bold text-[#C62828] font-headline">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#C62828] animate-ping"></span>
+<span>GOLDGUINEA</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-black font-semibold">8g</td>
+<td class="py-3.5 px-4 text-black font-semibold">8g</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded bg-[#C62828]/10 text-[#C62828] font-bold border border-[#C62828]/30">
+                      DISPUTED [0.995 vs 0.999]
+                    </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#C62828] text-white shadow-xs">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+                      DISPUTED
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-[#C62828] text-[11px] font-medium">
+                    Divergence: Contract Note vs BIS Hallmark
+                  </td>
+<td class="py-3.5 px-4 text-black/70 text-[11px]">
+                    29 Sep 2026 <span class="text-[#C62828] font-semibold">(Pending)</span>
+</td>
+<td class="py-3.5 px-6 text-right font-headline">
+<button class="px-2.5 py-1 text-xs rounded bg-[#C62828] text-white hover:bg-[#a52121] transition-colors font-medium mr-1 shadow-xs">Resolve Diff</button>
+<button class="px-2.5 py-1 text-xs rounded border border-black/15 text-black hover:bg-black/5 transition-colors">Verify</button>
+</td>
+</tr>
+<!-- Row 4: GOLDPETAL -->
+<tr class="hover:bg-[#FBF3E0]/30 transition-colors">
+<td class="py-3.5 px-6 font-bold text-black font-headline">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#B7862C]"></span>
+<span>GOLDPETAL</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-black">1g</td>
+<td class="py-3.5 px-4 text-black">1g</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded bg-black/5 font-semibold text-black">0.999</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                      VERIFIED_OFFICIAL
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-black/70 text-[11px]">MCX Contract Master 2025-26</td>
+<td class="py-3.5 px-4 text-black/60 text-[11px]">01 Oct 2026</td>
+<td class="py-3.5 px-6 text-right font-headline">
+<button class="px-2.5 py-1 text-xs rounded border border-black/15 text-black hover:bg-black/5 transition-colors mr-1">Inspect Diff</button>
+<button class="px-2.5 py-1 text-xs rounded bg-black/5 text-black/40 cursor-not-allowed">Locked</button>
+</td>
+</tr>
+<!-- Row 5: GOLD (1kg) -->
+<tr class="hover:bg-[#FBF3E0]/30 transition-colors">
+<td class="py-3.5 px-6 font-bold text-black font-headline">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#1E1E1E]"></span>
+<span>GOLD (1kg)</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-black">1000g</td>
+<td class="py-3.5 px-4 text-black">10g</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded bg-black/5 font-semibold text-black">0.995</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="material-symbols-outlined text-[13px]">sync_alt</span>
+                      SECONDARY
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-black/70 text-[11px]">LGD Direct Feed &amp; IBJA London Fix Cross</td>
+<td class="py-3.5 px-4 text-black/60 text-[11px]">28 Sep 2026</td>
+<td class="py-3.5 px-6 text-right font-headline">
+<button class="px-2.5 py-1 text-xs rounded border border-black/15 text-black hover:bg-black/5 transition-colors mr-1">Inspect Diff</button>
+<button class="px-2.5 py-1 text-xs rounded border border-[#B7862C] text-[#B7862C] hover:bg-[#B7862C]/5 transition-colors">Promote to Primary</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- ======================================================== -->
+<!-- TWO COLUMN SECTION: INGESTION LOG & SUSPECT PRICES       -->
+<!-- ======================================================== -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- ======================================================== -->
+<!-- PANEL 2: INGESTION & PIPELINE RUN LOG (Cols: 7)          -->
+<!-- ======================================================== -->
+<div class="lg:col-span-7 bg-white border border-black/10 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div>
+<div class="px-6 py-4 border-b border-black/10 bg-[#F7F5F0]/60 flex items-center justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-black/70">dataset</span>
+<h2 class="text-sm font-bold font-headline text-black">Bhavcopy Ingestion &amp; Pipeline Log</h2>
+</div>
+<p class="text-xs text-black/50 mt-0.5">MCX historical daily parser &amp; immutable storage check</p>
+</div>
+<span class="px-2.5 py-1 rounded bg-[#2E7D32]/10 text-[#2E7D32] text-xs font-mono font-semibold">
+                  PIPELINE: NORMAL
+                </span>
+</div>
+<!-- Metric Cards Subgrid -->
+<div class="grid grid-cols-4 divide-x divide-black/10 border-b border-black/10 text-center py-4 bg-white font-mono">
+<div class="px-3">
+<span class="text-[10px] text-black/50 uppercase tracking-tight block">Days Requested</span>
+<span class="text-lg font-bold text-black num-tabular">10</span>
+</div>
+<div class="px-3">
+<span class="text-[10px] text-black/50 uppercase tracking-tight block">Parsed Clean</span>
+<span class="text-lg font-bold text-[#2E7D32] num-tabular">9</span>
+</div>
+<div class="px-3">
+<span class="text-[10px] text-black/50 uppercase tracking-tight block">Excluded (Holidays)</span>
+<span class="text-lg font-bold text-black/60 num-tabular">1</span>
+<span class="text-[9px] text-black/40 block leading-none">Gandhi Jayanti</span>
+</div>
+<div class="px-3">
+<span class="text-[10px] text-black/50 uppercase tracking-tight block">Total Records</span>
+<span class="text-lg font-bold text-black num-tabular">151</span>
+</div>
+</div>
+<!-- Pipeline Integrity Check Checklist -->
+<div class="p-6 space-y-3.5">
+<h3 class="text-xs font-headline font-bold uppercase tracking-wider text-black/70">
+                  Data Pipeline Verification Checklist
+                </h3>
+<div class="space-y-2.5 font-mono text-xs">
+<!-- Check 1 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg border border-black/5 bg-[#F7F5F0]/60">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#2E7D32] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-black font-medium">Zero silent duplicates</span>
+<span class="text-[11px] text-black/50">(Deduplicated on contract_id + trade_date)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-[#2E7D32]/10 text-[#2E7D32] font-semibold text-[11px]">PASSED ✓</span>
+</div>
+<!-- Check 2 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg border border-black/5 bg-[#F7F5F0]/60">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#2E7D32] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-black font-medium">Raw Bhavcopy immutable storage</span>
+<span class="text-[11px] text-black/50">(Supabase bucket 'bhavcopy-raw' sha256 checked)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-[#2E7D32]/10 text-[#2E7D32] font-semibold text-[11px]">VERIFIED ✓</span>
+</div>
+<!-- Check 3 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg border border-black/5 bg-[#F7F5F0]/60">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#2E7D32] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-black font-medium">Schema Parity</span>
+<span class="text-[11px] text-black/50">(MCX-2026 v3.1 specification dictionary)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-[#2E7D32]/10 text-[#2E7D32] font-semibold text-[11px]">MATCHED 100%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Ingestion Footer Stats -->
+<div class="px-6 py-3 bg-[#F7F5F0] border-t border-black/10 flex items-center justify-between text-xs font-mono text-black/60">
+<span>Batch Execution: <strong class="text-black">142ms average</strong></span>
+<span class="text-black/50">Next scheduled ingest: Today, 23:45 IST</span>
+</div>
+</div>
+<!-- ======================================================== -->
+<!-- PANEL 3: SUSPECT PRICES MONITOR (R19 Filter) (Cols: 5)   -->
+<!-- ======================================================== -->
+<div class="lg:col-span-5 bg-white border border-black/10 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div>
+<div class="px-6 py-4 border-b border-black/10 bg-[#F7F5F0]/60 flex items-center justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#C62828]">crisis_alert</span>
+<h2 class="text-sm font-bold font-headline text-black">SUSPECT Prices Filter (R19 Engine)</h2>
+</div>
+<p class="text-xs text-black/50 mt-0.5">Outlier filtering for low-liquidity &amp; stale quotes</p>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-[#C62828]/10 text-[#C62828] text-xs font-mono font-bold border border-[#C62828]/20">
+                  12 records flagged
+                </span>
+</div>
+<!-- Flagged Rows List -->
+<div class="p-4 space-y-3 font-mono text-xs">
+<!-- Flagged Item 1 -->
+<div class="p-3 rounded-lg border border-[#C62828]/25 bg-[#C62828]/5 space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-bold text-black font-headline text-xs">GOLDGUINEA Nov-2026</span>
+<span class="text-[10px] font-bold bg-[#C62828] text-white px-2 py-0.5 rounded">
+                      LOW_VOLUME_FAR_EXPIRY
+                    </span>
+</div>
+<div class="flex items-center justify-between text-black/70 text-[11px]">
+<span>Volume: <strong class="text-[#C62828]">2 lots</strong> (&lt; 5 lot hurdle)</span>
+<span>Spread: <strong>₹94.00</strong></span>
+</div>
+<div class="text-[10px] text-black/50 pt-1 border-t border-[#C62828]/10 flex items-center justify-between">
+<span>Action: Suppressed from RV Z-Score</span>
+<span class="text-[#C62828] font-medium">Excluded</span>
+</div>
+</div>
+<!-- Flagged Item 2 -->
+<div class="p-3 rounded-lg border border-black/10 bg-[#F7F5F0] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-bold text-black font-headline text-xs">GOLDPETAL Dec-2026</span>
+<span class="text-[10px] font-bold bg-[#B7862C] text-white px-2 py-0.5 rounded">
+                      SETTLE_DIVERGENCE (+1.2%)
+                    </span>
+</div>
+<div class="flex items-center justify-between text-black/70 text-[11px]">
+<span>Close: <strong class="num-tabular">₹12,040</strong></span>
+<span>Settlement: <strong class="num-tabular">₹12,185</strong></span>
+</div>
+<div class="text-[10px] text-black/50 pt-1 border-t border-black/5 flex items-center justify-between">
+<span>Basis gap exceeded 80bps threshold</span>
+<span class="text-black/70 font-medium">Re-weighted</span>
+</div>
+</div>
+<!-- Flagged Item 3 -->
+<div class="p-3 rounded-lg border border-black/10 bg-[#F7F5F0] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-bold text-black font-headline text-xs">GOLDM Jan-2027</span>
+<span class="text-[10px] font-semibold bg-black/10 text-black px-2 py-0.5 rounded">
+                      ILLIQUID_SPREAD_SPIKE
+                    </span>
+</div>
+<div class="flex items-center justify-between text-black/70 text-[11px]">
+<span>Bid/Ask Gap: <strong class="text-[#C62828]">&gt; 42 bps</strong></span>
+<span>Depth: <strong>₹1,20,850 / 895</strong></span>
+</div>
+<div class="text-[10px] text-black/50 pt-1 border-t border-black/5 flex items-center justify-between">
+<span>Liquidity penalizer active in arb matrix</span>
+<span class="text-black/70 font-medium">Flagged</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer summary note -->
+<div class="px-6 py-3 bg-[#FBF3E0]/50 border-t border-black/10 text-[11px] text-[#B7862C] font-mono flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">shield</span>
+<span>Filter Action: Suppressed from RV calculation to prevent phantom arb signals.</span>
+</div>
+</div>
+</div>
+</main>
+<!-- ======================================================== -->
+<!-- 5. PERSISTENT INSTITUTIONAL FOOTER (Shared: Footer)      -->
+<!-- ======================================================== -->
+<footer class="w-full py-4 px-8 border-t border-black/10 bg-white flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-body text-black/50 shrink-0">
+<div class="flex items-center gap-2 text-center md:text-left">
+<span class="font-headline font-semibold text-black/80">AurumLens MCX Gold RV Suite:</span>
+<span>Analytics only — not investment advice. AurumLens MCX Gold RV Engine. Real-time indicative feed for informational purposes only.</span>
+</div>
+<div class="flex items-center gap-5 text-black/60 shrink-0 font-medium">
+<a class="hover:text-black transition-colors hover:underline" href="#">Methodology Specs</a>
+<a class="hover:text-black transition-colors hover:underline" href="#">Latency SLA</a>
+<a class="hover:text-black transition-colors hover:underline" href="#">Audit Trail</a>
+<a class="hover:text-black transition-colors hover:underline" href="#">Risk Disclosure</a>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

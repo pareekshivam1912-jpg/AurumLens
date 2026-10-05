@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AurumLens | Paper Trading &amp; Execution Simulator</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            ink: "#1E1E1E",
+            slate: "#4B5563",
+            "deep-gold": "#B7862C",
+            "gold-tint": "#FBF3E0",
+            panel: "#F7F5F0",
+            "quiet-green": "#2E7D32",
+            "alert-red": "#C62828",
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"],
+            mono: ["'JetBrains Mono'", "monospace"],
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F7F5F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+  </style>
+</head>
+<body class="bg-white text-ink font-body min-h-screen antialiased flex flex-col">
+<!-- APP SHELL CONTAINER -->
+<div class="flex min-h-screen w-full">
+<!-- SHARED COMPONENT: SideNavBar -->
+<aside class="fixed top-0 left-0 bottom-0 z-40 w-64 bg-white dark:bg-black h-screen flex flex-col justify-between shrink-0 border-r border-black/10 dark:border-white/10 font-headline font-body text-sm tracking-tight">
+<!-- Brand & Suite Identifier -->
+<div class="flex flex-col">
+<div class="h-14 px-5 flex items-center gap-3 border-b border-black/10 dark:border-white/10">
+<div class="w-8 h-8 rounded-lg bg-[#B7862C] flex items-center justify-center text-white font-bold shadow-sm">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
+<div>
+<div class="font-headline text-lg font-bold tracking-tight text-black dark:text-white leading-tight">AurumLens</div>
+<div class="text-[11px] font-medium text-slate uppercase tracking-wider">MCX Gold RV Suite</div>
+</div>
+</div>
+<!-- Primary Navigation Links (9 tabs from JSON) -->
+<nav class="p-3 space-y-1">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Pair Analysis -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">compare_arrows</span>
+<span>Pair Analysis</span>
+</a>
+<!-- Backtest -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span>Backtest</span>
+</a>
+<!-- Calendar -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+<span>Calendar</span>
+</a>
+<!-- Alert Log -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+<span>Alert Log</span>
+</a>
+<!-- Hedge Tools -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+<span>Hedge Tools</span>
+</a>
+<!-- Data Health -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">health_and_safety</span>
+<span>Data Health</span>
+</a>
+<!-- Methodology -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>Methodology</span>
+</a>
+<!-- Paper Trading (ACTIVE PAGE - style_active_navigation applied) -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-black dark:text-white bg-black/5 dark:bg-white/10 border-l-2 border-[#B7862C] shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-[#B7862C]">candlestick_chart</span>
+<span class="font-semibold text-ink">Paper Trading</span>
+</div>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#FBF3E0] text-[#B7862C] font-semibold tracking-wider uppercase border border-[#B7862C]/30">SIM</span>
+</a>
+</nav>
+</div>
+<!-- Navigation Bottom Section with CTA & Footer Tabs -->
+<div class="p-3 border-t border-black/10 dark:border-white/10 space-y-2">
+<button class="w-full py-2 px-3 bg-[#B7862C] hover:bg-[#a07424] text-white font-medium text-xs rounded-lg flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.99] shadow-sm">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Export Report</span>
+</button>
+<div class="pt-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span class="text-xs">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg font-normal text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="text-xs">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Offset for fixed 64px SideBar) -->
+<div class="pl-64 flex flex-col flex-1 w-full bg-[#fbfbfa]">
+<!-- SHARED COMPONENT: TopNavBar -->
+<header class="sticky top-0 z-30 flex items-center justify-between px-6 h-14 w-full bg-white border-b border-black/10 font-headline text-xs font-medium uppercase tracking-wider">
+<!-- Left: Product & Feed Telemetry -->
+<div class="flex items-center gap-4">
+<div class="font-headline text-sm font-semibold text-black flex items-center gap-2">
+<span>AurumLens</span>
+<span class="text-black/30 font-light">/</span>
+<span class="text-slate font-normal">Execution Simulation</span>
+<span class="text-black/30 font-light">/</span>
+<span class="text-[#B7862C] font-semibold">Paper Trading</span>
+</div>
+<div class="h-4 w-px bg-black/10"></div>
+<!-- Market Live Ticker -->
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-black font-semibold">MCX: GOLD (Active)</span>
+<span class="tabular-nums font-mono font-medium text-black">₹1,20,482.41</span>
+<span class="text-emerald-700 font-semibold text-[11px] bg-emerald-50 px-1 rounded border border-emerald-200">+0.34%</span>
+<span class="text-slate text-[10px] lowercase tracking-normal">Live Feed (0.4s)</span>
+</div>
+</div>
+<!-- Right: Actions & Officer Profile -->
+<div class="flex items-center gap-3 tracking-normal normal-case">
+<div class="flex items-center gap-1 border-r border-black/10 pr-3">
+<button class="p-1.5 text-black/60 hover:text-black rounded-lg hover:bg-black/5 transition-colors" title="Filter parameters">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+</button>
+<button class="p-1.5 text-black/60 hover:text-black rounded-lg hover:bg-black/5 transition-colors" title="Simulation tuning">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="p-1.5 text-black/60 hover:text-black rounded-lg hover:bg-black/5 transition-colors" title="Force tick refresh">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<!-- Mode Toggles / Secondary CTA -->
+<button class="px-2.5 py-1 text-xs font-medium text-slate bg-panel border border-black/10 rounded hover:bg-black/5 transition-colors">
+            Paper Engine
+          </button>
+<button class="px-2.5 py-1 text-xs font-semibold text-white bg-black rounded hover:bg-black/80 transition-colors shadow-sm flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<span>Live Terminal</span>
+</button>
+<!-- CRO Account Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-black/10">
+<div class="w-7 h-7 rounded-full bg-slate/10 border border-slate/30 flex items-center justify-center text-ink text-xs font-semibold" title="Chief Risk Officer Account">
+              CR
+            </div>
+<div class="text-left text-xs leading-none hidden xl:block">
+<div class="font-semibold text-ink">CRO Surveillance</div>
+<div class="text-[10px] text-slate">Institutional Tier</div>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT CANVAS -->
+<main class="p-6 space-y-6 flex-1 max-w-[1440px] w-full mx-auto">
+<!-- 1. SIMULATION SAFETY & ADAPTER INTEGRITY BANNER -->
+<section class="bg-[#FBF3E0] border border-[#B7862C]/30 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+<div class="flex items-start gap-3">
+<div class="p-2 rounded-lg bg-[#B7862C]/15 text-[#B7862C] shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-xl">shield_with_heart</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-[#B7862C] uppercase tracking-wider">SIMULATED PAPER EXECUTION — NO REAL BROKER ORDERS</span>
+<span class="px-2 py-0.5 rounded-full bg-white text-[10px] font-semibold text-slate border border-[#B7862C]/30">Synthetic Gateway Active</span>
+</div>
+<p class="text-xs text-ink/80 mt-0.5 leading-relaxed">
+                Executions are simulated using synthetic broker fill adapters with modeled Bid-Ask slippage and statutory MCX tariffs. Zero real capital at risk.
+              </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<div class="text-right text-[11px]">
+<div class="text-slate">Simulated Broker Gateway</div>
+<div class="font-mono font-semibold text-ink flex items-center justify-end gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                12ms fill delay (Triangular)
+              </div>
+</div>
+<div class="px-2.5 py-1 bg-white/80 rounded border border-[#B7862C]/20 text-[11px] font-mono text-[#B7862C] font-medium">
+              SLIPPAGE: Almgren-Chriss
+            </div>
+</div>
+</section>
+<!-- 2. TOP HEADER & TELEMETRY CONTROLS -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-black/10">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="font-headline text-2xl font-bold tracking-tight text-ink">
+                Paper Trading &amp; Execution Simulator
+              </h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-quiet-green border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet-green animate-pulse"></span>
+                QUIET
+              </span>
+</div>
+<p class="text-xs text-slate mt-1">
+              Simulated multi-leg order execution behind broker adapter. Strictly no real money or broker API connection.
+            </p>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<!-- Guard Tag -->
+<div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-panel border border-black/10 rounded-lg text-xs font-mono text-slate">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+<span>Zero-Duplicate Guard: <strong class="text-ink font-semibold">ACTIVE</strong> (signal_id constraint)</span>
+</div>
+<!-- Action Controls -->
+<button class="px-3 py-1.5 text-xs font-medium text-alert-red bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+<span>Reset Sandbox</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-medium text-ink bg-white hover:bg-panel border border-black/15 rounded-lg flex items-center gap-1.5 transition-all shadow-xs">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Export Paper Ledger CSV</span>
+</button>
+<div class="relative">
+<button class="px-3 py-1.5 text-xs font-medium text-ink bg-panel hover:bg-black/5 border border-black/15 rounded-lg flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>Execution Settings</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 3. PERFORMANCE SUMMARY TILES (6 Bento Cards) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
+<!-- Card 1: Total Paper Capital -->
+<div class="bg-panel border border-black/10 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span>Total Paper Capital</span>
+<span class="material-symbols-outlined text-[18px] text-slate/60">account_balance_wallet</span>
+</div>
+<div class="font-mono text-lg font-bold text-ink tabular-nums">
+              ₹10,00,000.00
+            </div>
+<div class="mt-2 pt-2 border-t border-black/5 text-[11px] text-slate space-y-0.5">
+<div class="flex justify-between"><span>Avail:</span> <span class="tabular-nums font-mono font-medium text-ink">₹8,05,800.00</span></div>
+<div class="flex justify-between"><span>Margin Util:</span> <span class="tabular-nums font-medium text-ink">19.4%</span></div>
+</div>
+</div>
+<!-- Card 2: Realized P&L -->
+<div class="bg-panel border border-black/10 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span>Realized P&amp;L</span>
+<span class="material-symbols-outlined text-[18px] text-quiet-green">trending_up</span>
+</div>
+<div class="font-mono text-lg font-bold text-quiet-green tabular-nums">
+              +₹28,450.00
+            </div>
+<div class="mt-2 pt-2 border-t border-black/5 text-[11px] text-slate space-y-0.5">
+<div class="flex justify-between"><span>Return on Cap:</span> <span class="tabular-nums font-medium text-quiet-green">+2.85%</span></div>
+<div class="flex justify-between"><span>Win Rate:</span> <span class="tabular-nums font-medium text-ink">75.0% (6/8)</span></div>
+</div>
+</div>
+<!-- Card 3: Unrealized P&L -->
+<div class="bg-[#FBF3E0]/50 border border-[#B7862C]/30 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span class="text-[#B7862C] font-medium">Unrealized MTM</span>
+<span class="material-symbols-outlined text-[18px] text-[#B7862C]">analytics</span>
+</div>
+<div class="font-mono text-lg font-bold text-quiet-green tabular-nums">
+              +₹4,820.00
+            </div>
+<div class="mt-2 pt-2 border-t border-[#B7862C]/20 text-[11px] text-slate space-y-0.5">
+<div class="flex justify-between"><span>Open Mandate:</span> <span class="tabular-nums font-medium text-ink">1 Active</span></div>
+<div class="flex justify-between"><span>Net of Est. Tax:</span> <span class="tabular-nums font-mono font-medium text-quiet-green">+₹4,340.00</span></div>
+</div>
+</div>
+<!-- Card 4: Active Simulated Positions -->
+<div class="bg-panel border border-black/10 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span>Active Positions</span>
+<span class="material-symbols-outlined text-[18px] text-slate/60">workspaces</span>
+</div>
+<div class="font-mono text-lg font-bold text-ink tabular-nums flex items-baseline gap-1">
+<span>1</span> <span class="text-xs font-normal text-slate">Open Mandate</span>
+</div>
+<div class="mt-2 pt-2 border-t border-black/5 text-[11px] text-slate space-y-0.5">
+<div class="flex justify-between"><span>Allocated Margin:</span> <span class="tabular-nums font-mono text-ink">₹1,94,200.00</span></div>
+<div class="flex justify-between"><span>Max Allowed:</span> <span class="tabular-nums text-ink">3 Pairs</span></div>
+</div>
+</div>
+<!-- Card 5: Closed Simulated Trades -->
+<div class="bg-panel border border-black/10 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span>Simulation History</span>
+<span class="material-symbols-outlined text-[18px] text-slate/60">task_alt</span>
+</div>
+<div class="font-mono text-lg font-bold text-ink tabular-nums flex items-baseline gap-1">
+<span>8</span> <span class="text-xs font-normal text-slate">Completed</span>
+</div>
+<div class="mt-2 pt-2 border-t border-black/5 text-[11px] text-slate space-y-0.5">
+<div class="flex justify-between"><span>Wins / Losses:</span> <span class="tabular-nums font-medium text-ink">6W / 2L</span></div>
+<div class="flex justify-between"><span>Profit Factor:</span> <span class="tabular-nums font-mono font-semibold text-ink">2.45</span></div>
+</div>
+</div>
+<!-- Card 6: Total Friction Paid -->
+<div class="bg-panel border border-black/10 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate text-xs mb-1">
+<span>Friction &amp; Tariffs</span>
+<span class="material-symbols-outlined text-[18px] text-slate/60">receipt_long</span>
+</div>
+<div class="font-mono text-lg font-bold text-slate tabular-nums">
+              ₹4,180.00
+            </div>
+<div class="mt-2 pt-2 border-t border-black/5 text-[10px] text-slate/80 space-y-0.5 leading-tight">
+<div class="flex justify-between"><span>MCX + CTT:</span> <span class="font-mono tabular-nums text-ink">₹3,060</span></div>
+<div class="flex justify-between"><span>Brok + SEBI:</span> <span class="font-mono tabular-nums text-ink">₹1,120</span></div>
+</div>
+</div>
+</section>
+<!-- 4. ACTIVE POSITION SECTION (Deep Dive Arbitrage Card) -->
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h2 class="font-headline text-sm font-semibold tracking-tight text-ink uppercase">
+                Active Simulated Arbitrage Position (1 Open Mandate)
+              </h2>
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+</div>
+<div class="flex items-center gap-3 text-xs text-slate">
+<span class="flex items-center gap-1 font-mono text-[11px]">
+<span class="material-symbols-outlined text-[14px] text-slate">sensors</span>
+                Tick Feed: MCX Live Depth Simulation (5-Level)
+              </span>
+</div>
+</div>
+<!-- Rich High-Fidelity Position Card -->
+<div class="bg-white border border-black/15 rounded-xl shadow-xs overflow-hidden">
+<!-- Header row of the card -->
+<div class="bg-panel/70 px-5 py-3.5 border-b border-black/10 flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="px-2.5 py-1 rounded bg-black text-white font-mono font-bold text-xs">
+                  PAIR-RV-04
+                </div>
+<div>
+<div class="font-headline font-bold text-base text-ink flex items-center gap-2">
+<span>GOLDTEN - GOLDGUINEA</span>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-quiet-green border border-emerald-300">
+                      ACTIVE IN TRADE
+                    </span>
+</div>
+<div class="text-[11px] text-slate font-mono mt-0.5">
+                    Origin Signal: <span class="text-ink font-semibold underline decoration-dotted">sig_20261001_01</span> (Alert Log) · Executed via Synthetic Router
+                  </div>
+</div>
+</div>
+<!-- Metadata pills -->
+<div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+<div class="text-right">
+<div class="text-slate text-[10px] uppercase font-sans">Simulated Fill Timestamp</div>
+<div class="text-ink font-medium">01 Oct 2026, 14:48:23 IST <span class="text-slate/60 text-[10px]">(t+1s fill)</span></div>
+</div>
+<div class="h-6 w-px bg-black/10"></div>
+<div class="text-right">
+<div class="text-slate text-[10px] uppercase font-sans">Holding Tenure</div>
+<div class="text-ink font-semibold">2 / 15 Days Max</div>
+</div>
+<div class="h-6 w-px bg-black/10"></div>
+<div class="text-right">
+<div class="text-slate text-[10px] uppercase font-sans">Tender Period Risk</div>
+<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-quiet-green font-semibold text-[11px] border border-emerald-200">
+                    23 days to tender (SAFE)
+                  </span>
+</div>
+</div>
+</div>
+<!-- Two-Leg Detailed Execution Table -->
+<div class="p-5 space-y-5">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+<!-- LEG A: Short Leg -->
+<div class="border border-black/10 rounded-lg p-4 bg-[#fdfdfd]">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-black/5">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-red-100 text-alert-red font-mono font-bold text-xs">SHORT</span>
+<span class="font-headline font-semibold text-ink text-sm">Leg A: MCX GOLDTEN</span>
+</div>
+<span class="text-xs text-slate font-mono">4 lots (40g physical eq.)</span>
+</div>
+<div class="grid grid-cols-2 gap-y-2 text-xs">
+<div>
+<div class="text-slate text-[11px]">Signal Benchmark Price</div>
+<div class="font-mono font-medium text-ink tabular-nums">₹1,20,500.00</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Simulated Fill Price</div>
+<div class="font-mono font-medium text-ink tabular-nums flex items-center gap-1">
+                        ₹1,20,470.00
+                        <span class="text-alert-red text-[10px]">(-₹30 slip)</span>
+</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Current MCX Mark</div>
+<div class="font-mono font-bold text-ink tabular-nums">₹1,20,400.00</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Simulated Leg P&amp;L</div>
+<div class="font-mono font-bold text-quiet-green tabular-nums">+₹2,800.00</div>
+</div>
+</div>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[11px] text-slate">
+<span>Broker Route: MCX_SYNTH_DIRECT</span>
+<span>Order ID: #SIM-ORD-8810A</span>
+</div>
+</div>
+<!-- LEG B: Long Leg -->
+<div class="border border-black/10 rounded-lg p-4 bg-[#fdfdfd]">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-black/5">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-quiet-green font-mono font-bold text-xs">LONG</span>
+<span class="font-headline font-semibold text-ink text-sm">Leg B: MCX GOLDGUINEA</span>
+</div>
+<span class="text-xs text-slate font-mono">5 lots (40g physical eq.)</span>
+</div>
+<div class="grid grid-cols-2 gap-y-2 text-xs">
+<div>
+<div class="text-slate text-[11px]">Signal Benchmark Price</div>
+<div class="font-mono font-medium text-ink tabular-nums">₹96,400.00</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Simulated Fill Price</div>
+<div class="font-mono font-medium text-ink tabular-nums flex items-center gap-1">
+                        ₹96,448.00
+                        <span class="text-alert-red text-[10px]">(+₹48 slip)</span>
+</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Current MCX Mark</div>
+<div class="font-mono font-bold text-ink tabular-nums">₹96,380.00</div>
+</div>
+<div>
+<div class="text-slate text-[11px]">Simulated Leg P&amp;L</div>
+<div class="font-mono font-bold text-quiet-green tabular-nums">+₹2,020.00</div>
+</div>
+</div>
+<div class="mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[11px] text-slate">
+<span>Broker Route: MCX_SYNTH_DIRECT</span>
+<span>Order ID: #SIM-ORD-8810B</span>
+</div>
+</div>
+</div>
+<!-- Arbitrage Spread Reversion Metrics & Progress -->
+<div class="p-4 bg-panel rounded-lg border border-black/10 space-y-3">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs">
+<div class="space-y-0.5">
+<div class="text-slate text-[11px]">Relative Value Ratio &amp; Normalized Spread</div>
+<div class="font-mono font-semibold text-ink flex items-center gap-2">
+<span>Current: <strong class="text-[#B7862C]">+0.000720</strong></span>
+<span class="text-slate">|</span>
+<span>Entry: +0.001650</span>
+<span class="text-slate">|</span>
+<span>Target Mean: 0.000000</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div>
+<div class="text-slate text-[11px]">Residual Physical Delta</div>
+<div class="font-mono font-semibold text-quiet-green">0.0g (Perfect Purity Parity)</div>
+</div>
+<div class="text-right">
+<div class="text-slate text-[11px]">Net Mark-to-Market</div>
+<div class="font-mono text-sm font-bold text-quiet-green tabular-nums">+₹4,820.00</div>
+</div>
+</div>
+</div>
+<!-- Reversion Progress Visualizer -->
+<div>
+<div class="flex justify-between text-[11px] mb-1 font-mono">
+<span class="text-slate">Reversion Progress (Mean-Reverting Convergence):</span>
+<span class="font-semibold text-ink">56.4% completed</span>
+</div>
+<div class="w-full h-2.5 bg-black/10 rounded-full overflow-hidden relative">
+<div class="h-full bg-[#B7862C] rounded-full transition-all duration-500" style="width: 56.4%;"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate font-mono mt-1">
+<span>Entry (+2.2σ Divergence)</span>
+<span class="text-[#B7862C] font-semibold">Current (+0.96σ)</span>
+<span>Historical Mean (0.0σ Exit)</span>
+</div>
+</div>
+</div>
+<!-- Position Actions Toolbar -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+<div class="flex items-center gap-2 text-xs text-slate">
+<span class="material-symbols-outlined text-[16px] text-[#B7862C]">info</span>
+<span>Exit trigger configured: <strong class="text-ink">Mean Reversion Target (+0.0σ)</strong> or <strong class="text-ink">15-day timeout</strong>.</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 text-xs font-medium text-ink bg-panel hover:bg-black/5 border border-black/15 rounded-lg flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>Adjust Stop Hurdle</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-medium text-ink bg-panel hover:bg-black/5 border border-black/15 rounded-lg flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">receipt</span>
+<span>View Tick By Tick Execution Log</span>
+</button>
+<button class="px-3.5 py-1.5 text-xs font-semibold text-white bg-alert-red hover:bg-red-800 rounded-lg flex items-center gap-1.5 transition-all shadow-xs">
+<span class="material-symbols-outlined text-[16px]">close</span>
+<span>Close Position Early (Simulated Market)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. CLOSED PAPER TRADES HISTORY TABLE -->
+<section class="space-y-3">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h2 class="font-headline text-sm font-semibold tracking-tight text-ink uppercase">
+                Simulated Execution Ledger &amp; History
+              </h2>
+<p class="text-xs text-slate">Complete audit trail of all automated multi-leg paper executions with statutory MCX tariff deductions.</p>
+</div>
+<!-- Table Filters -->
+<div class="flex items-center gap-1.5 bg-panel p-1 border border-black/10 rounded-lg text-xs">
+<button class="px-2.5 py-1 rounded bg-white font-medium text-ink shadow-xs">All (8)</button>
+<button class="px-2.5 py-1 rounded text-slate hover:text-ink">Reversion Exits (6)</button>
+<button class="px-2.5 py-1 rounded text-slate hover:text-ink">Time Stops (1)</button>
+<button class="px-2.5 py-1 rounded text-slate hover:text-ink">Unsafe Expiry (1)</button>
+</div>
+</div>
+<!-- Comprehensive Table -->
+<div class="bg-white border border-black/15 rounded-xl shadow-xs overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead>
+<tr class="bg-panel border-b border-black/10 text-slate font-medium text-[11px] uppercase tracking-wider font-headline">
+<th class="py-3 px-4">Trade ID</th>
+<th class="py-3 px-4">Pair Mandate</th>
+<th class="py-3 px-4">Entry / Fill</th>
+<th class="py-3 px-4">Exit / Fill</th>
+<th class="py-3 px-4">Holding</th>
+<th class="py-3 px-4">Exit Reason</th>
+<th class="py-3 px-4 text-right">Gross P&amp;L</th>
+<th class="py-3 px-4 text-right">MCX Friction</th>
+<th class="py-3 px-4 text-right font-bold text-ink">Net Realized</th>
+<th class="py-3 px-4 text-center">Fidelity Guard</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-black/5 font-mono">
+<!-- Row 1 -->
+<tr class="hover:bg-panel/50 transition-colors">
+<td class="py-3 px-4 font-semibold text-ink">#SIM-2026-008</td>
+<td class="py-3 px-4 font-sans font-medium text-ink">GOLDTEN / GOLDM</td>
+<td class="py-3 px-4 text-slate">
+<div>28 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,20,120 / ₹1,20,180</div>
+</td>
+<td class="py-3 px-4 text-slate">
+<div>01 Oct 2026</div>
+<div class="text-[11px] text-ink">₹1,20,380 / ₹1,20,290</div>
+</td>
+<td class="py-3 px-4 font-sans text-slate">3 days</td>
+<td class="py-3 px-4 font-sans">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-quiet-green border border-emerald-200">
+                        REVERSION
+                      </span>
+</td>
+<td class="py-3 px-4 text-right text-quiet-green font-medium tabular-nums">+₹14,200.00</td>
+<td class="py-3 px-4 text-right text-slate tabular-nums">-₹1,950.00</td>
+<td class="py-3 px-4 text-right font-bold text-quiet-green tabular-nums">+₹12,250.00</td>
+<td class="py-3 px-4 text-center font-sans">
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold" title="Zero duplicate guard passed">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        98.4%
+                      </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-panel/50 transition-colors">
+<td class="py-3 px-4 font-semibold text-ink">#SIM-2026-007</td>
+<td class="py-3 px-4 font-sans font-medium text-ink">GOLDM / GOLDGUINEA</td>
+<td class="py-3 px-4 text-slate">
+<div>22 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,19,840 / ₹95,900</div>
+</td>
+<td class="py-3 px-4 text-slate">
+<div>26 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,19,950 / ₹96,150</div>
+</td>
+<td class="py-3 px-4 font-sans text-slate">4 days</td>
+<td class="py-3 px-4 font-sans">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-quiet-green border border-emerald-200">
+                        REVERSION
+                      </span>
+</td>
+<td class="py-3 px-4 text-right text-quiet-green font-medium tabular-nums">+₹9,800.00</td>
+<td class="py-3 px-4 text-right text-slate tabular-nums">-₹1,640.00</td>
+<td class="py-3 px-4 text-right font-bold text-quiet-green tabular-nums">+₹8,160.00</td>
+<td class="py-3 px-4 text-center font-sans">
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        99.1%
+                      </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-panel/50 transition-colors">
+<td class="py-3 px-4 font-semibold text-ink">#SIM-2026-006</td>
+<td class="py-3 px-4 font-sans font-medium text-ink">GOLDTEN / GOLDPETAL</td>
+<td class="py-3 px-4 text-slate">
+<div>15 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,19,200 / ₹11,940</div>
+</td>
+<td class="py-3 px-4 text-slate">
+<div>25 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,19,100 / ₹11,990</div>
+</td>
+<td class="py-3 px-4 font-sans text-slate">10 days</td>
+<td class="py-3 px-4 font-sans">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                        TIME_STOP
+                      </span>
+</td>
+<td class="py-3 px-4 text-right text-alert-red font-medium tabular-nums">-₹3,200.00</td>
+<td class="py-3 px-4 text-right text-slate tabular-nums">-₹1,450.00</td>
+<td class="py-3 px-4 text-right font-bold text-alert-red tabular-nums">-₹4,650.00</td>
+<td class="py-3 px-4 text-center font-sans">
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        97.8%
+                      </span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-panel/50 transition-colors">
+<td class="py-3 px-4 font-semibold text-ink">#SIM-2026-005</td>
+<td class="py-3 px-4 font-sans font-medium text-ink">GOLDTEN / GOLDGUINEA</td>
+<td class="py-3 px-4 text-slate">
+<div>09 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,18,900 / ₹95,120</div>
+</td>
+<td class="py-3 px-4 text-slate">
+<div>14 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,19,050 / ₹95,440</div>
+</td>
+<td class="py-3 px-4 font-sans text-slate">5 days</td>
+<td class="py-3 px-4 font-sans">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-quiet-green border border-emerald-200">
+                        REVERSION
+                      </span>
+</td>
+<td class="py-3 px-4 text-right text-quiet-green font-medium tabular-nums">+₹11,400.00</td>
+<td class="py-3 px-4 text-right text-slate tabular-nums">-₹1,820.00</td>
+<td class="py-3 px-4 text-right font-bold text-quiet-green tabular-nums">+₹9,580.00</td>
+<td class="py-3 px-4 text-center font-sans">
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        99.5%
+                      </span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-panel/50 transition-colors">
+<td class="py-3 px-4 font-semibold text-ink">#SIM-2026-004</td>
+<td class="py-3 px-4 font-sans font-medium text-ink">GOLDM / GOLDPETAL</td>
+<td class="py-3 px-4 text-slate">
+<div>01 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,18,400 / ₹11,880</div>
+</td>
+<td class="py-3 px-4 text-slate">
+<div>07 Sep 2026</div>
+<div class="text-[11px] text-ink">₹1,18,650 / ₹11,920</div>
+</td>
+<td class="py-3 px-4 font-sans text-slate">6 days</td>
+<td class="py-3 px-4 font-sans">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-800 border border-purple-200">
+                        UNSAFE_EXPIRY
+                      </span>
+</td>
+<td class="py-3 px-4 text-right text-quiet-green font-medium tabular-nums">+₹4,500.00</td>
+<td class="py-3 px-4 text-right text-slate tabular-nums">-₹1,390.00</td>
+<td class="py-3 px-4 text-right font-bold text-quiet-green tabular-nums">+₹3,110.00</td>
+<td class="py-3 px-4 text-center font-sans">
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        98.9%
+                      </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table pagination / footer info -->
+<div class="px-4 py-3 bg-panel border-t border-black/10 flex items-center justify-between text-xs text-slate">
+<div>Showing <strong class="text-ink">5</strong> of <strong class="text-ink">8</strong> recorded simulation trades</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 bg-white border border-black/15 rounded hover:bg-black/5 disabled:opacity-50 text-ink" disabled="">Previous</button>
+<span class="font-mono text-ink">Page 1 of 2</span>
+<button class="px-2.5 py-1 bg-white border border-black/15 rounded hover:bg-black/5 text-ink">Next</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. EXECUTION ENGINE AUDIT & GUARD RAILS (3 Column Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+<!-- Card A: Zero-Duplicate Guard -->
+<div class="p-4 bg-white border border-black/15 rounded-xl space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-quiet-green">lock</span>
+<h3 class="font-headline font-semibold text-xs text-ink uppercase tracking-wider">Zero-Duplicate Guard</h3>
+</div>
+<p class="text-xs text-slate leading-relaxed">
+              Enforced signal integrity preventions. Prevents concurrent duplicate orders for any active signal ID.
+            </p>
+<div class="p-2 bg-panel rounded font-mono text-[10px] text-slate break-all">
+              Constraint Hash: <span class="text-ink font-semibold">sha256:7b91fe2a884c019d...</span>
+</div>
+</div>
+<!-- Card B: Synthetic Fill Adapter Model -->
+<div class="p-4 bg-white border border-black/15 rounded-xl space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-[#B7862C]">memory</span>
+<h3 class="font-headline font-semibold text-xs text-ink uppercase tracking-wider">Synthetic Adapter Engine</h3>
+</div>
+<p class="text-xs text-slate leading-relaxed">
+              Slippage and latency simulation utilizes MCX L2 order book depth impact with triangular distributed fill queues.
+            </p>
+<div class="flex items-center justify-between text-[11px] font-mono pt-1 text-slate">
+<span>Latency: <strong>Tri(8,12,25ms)</strong></span>
+<span>Impact: <strong>Almgren-Chriss</strong></span>
+</div>
+</div>
+<!-- Card C: Regulatory Sandbox Rules -->
+<div class="p-4 bg-white border border-black/15 rounded-xl space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-ink">verified_user</span>
+<h3 class="font-headline font-semibold text-xs text-ink uppercase tracking-wider">Regulatory Sandbox Guard</h3>
+</div>
+<p class="text-xs text-slate leading-relaxed">
+              SEBI Algorithmic Trading Sandbox circular compliant. Strict broker firewall prevents accidental order routing to exchange gateways.
+            </p>
+<div class="flex items-center gap-1.5 text-[11px] text-quiet-green font-medium pt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-quiet-green"></span>
+              Isolated Sandbox Protocol V2.4 Active
+            </div>
+</div>
+</section>
+</main>
+<!-- SHARED COMPONENT: Footer -->
+<footer class="w-full py-4 px-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-white border-t border-black/10 font-body text-xs text-black/50">
+<!-- Persistent Disclaimer -->
+<div class="flex items-center gap-2 text-center md:text-left">
+<span class="font-headline text-xs font-semibold text-black/70">AurumLens</span>
+<span>•</span>
+<span>Analytics only — not investment advice. AurumLens MCX Gold RV Engine. Real-time indicative feed for informational purposes only.</span>
+</div>
+<!-- Links from JSON -->
+<div class="flex flex-wrap items-center gap-4 text-xs font-medium text-black/60">
+<a class="hover:text-black transition-colors underline" href="#">Methodology Specs</a>
+<a class="hover:text-black transition-colors underline" href="#">Latency SLA</a>
+<a class="hover:text-black transition-colors underline" href="#">Audit Trail</a>
+<a class="hover:text-black transition-colors underline" href="#">Risk Disclosure</a>
+</div>
+</footer>
+</div>
+</div>
+</body></html>
