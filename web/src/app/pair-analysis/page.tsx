@@ -23,30 +23,117 @@ interface GateRow {
   reasonCode: string;
 }
 
-const gates: GateRow[] = [
-  { name: "SPEC_OK", passed: true, value: "VERIFIED_OFFICIAL", threshold: "Official Spec", margin: "Pass", reasonCode: "—" },
-  { name: "DATA_QUALITY", passed: true, value: "Both OK (0 missing ticks)", threshold: "Not SUSPECT", margin: "Pass", reasonCode: "—" },
-  { name: "EXPIRY_PAIR_VALID", passed: true, value: "5 days gap", threshold: "≤ 35 days", margin: "+30 days", reasonCode: "—" },
-  { name: "HISTORY_SUFFICIENT", passed: true, value: "60 sessions", threshold: "≥ 30 sessions", margin: "+30 obs", reasonCode: "—" },
-  { name: "Z_SCORE_THRESHOLD", passed: false, value: "1.67", threshold: "≥ 2.00", margin: "-0.33", reasonCode: "Z_BELOW_THRESHOLD" },
-  { name: "LIQUIDITY_VOLUME_A", passed: true, value: "120 lots/day", threshold: "≥ 10 lots", margin: "+110 lots", reasonCode: "—" },
-  { name: "LIQUIDITY_VOLUME_B", passed: true, value: "85 lots/day", threshold: "≥ 10 lots", margin: "+75 lots", reasonCode: "—" },
-  { name: "LIQUIDITY_OI_A", passed: true, value: "450 open lots", threshold: "≥ 50 lots", margin: "+400 lots", reasonCode: "—" },
-  { name: "LIQUIDITY_OI_B", passed: true, value: "320 open lots", threshold: "≥ 50 lots", margin: "+270 lots", reasonCode: "—" },
-  { name: "EXPIRY_SAFETY", passed: true, value: "25 days to tender", threshold: "> 5 days", margin: "+20 days", reasonCode: "—" },
-  { name: "COST_HURDLE", passed: true, value: "₹480.00 gross edge", threshold: "> ₹170.00 friction", margin: "+₹310.00", reasonCode: "—" },
-  { name: "DUPLICATE_CHECK", passed: true, value: "None active", threshold: "1 max open per desk", margin: "Pass", reasonCode: "—" },
+interface ScenarioData {
+  id: string;
+  label: string;
+  date: string;
+  status: "ALERT" | "QUIET";
+  zscore: string;
+  adjSpread: string;
+  rawSpread: string;
+  carryAdj: string;
+  carrySource: string;
+  auditSummary: string;
+  gates: GateRow[];
+}
+
+const demoScenarios: ScenarioData[] = [
+  {
+    id: "alert",
+    label: "Date 1: Clear Gated Alert (All 12 Gates Pass)",
+    date: "2026-09-18",
+    status: "ALERT",
+    zscore: "+2.45",
+    adjSpread: "+0.001420",
+    rawSpread: "+0.000600",
+    carryAdj: "+0.000820",
+    carrySource: "CURVE (6.50% a.y.)",
+    auditSummary: "Audit: 12 / 12 Passed (All Risk & Economic Hurdles Cleared)",
+    gates: [
+      { name: "SPEC_OK", passed: true, value: "VERIFIED_OFFICIAL", threshold: "Official Spec", margin: "Pass", reasonCode: "—" },
+      { name: "DATA_QUALITY", passed: true, value: "Both OK (0 missing ticks)", threshold: "Not SUSPECT", margin: "Pass", reasonCode: "—" },
+      { name: "EXPIRY_PAIR_VALID", passed: true, value: "5 days gap", threshold: "≤ 35 days", margin: "+30 days", reasonCode: "—" },
+      { name: "HISTORY_SUFFICIENT", passed: true, value: "60 sessions", threshold: "≥ 30 sessions", margin: "+30 obs", reasonCode: "—" },
+      { name: "Z_SCORE_THRESHOLD", passed: true, value: "2.45", threshold: "≥ 2.00", margin: "+0.45", reasonCode: "—" },
+      { name: "LIQUIDITY_VOLUME_A", passed: true, value: "185 lots/day", threshold: "≥ 10 lots", margin: "+175 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_VOLUME_B", passed: true, value: "140 lots/day", threshold: "≥ 10 lots", margin: "+130 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_A", passed: true, value: "520 open lots", threshold: "≥ 50 lots", margin: "+470 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_B", passed: true, value: "410 open lots", threshold: "≥ 50 lots", margin: "+360 lots", reasonCode: "—" },
+      { name: "EXPIRY_SAFETY", passed: true, value: "28 days to tender", threshold: "> 5 days", margin: "+23 days", reasonCode: "—" },
+      { name: "COST_HURDLE", passed: true, value: "₹560.00 gross edge", threshold: "> ₹168.00 friction", margin: "+₹392.00", reasonCode: "—" },
+      { name: "DUPLICATE_CHECK", passed: true, value: "None active", threshold: "1 max open per desk", margin: "Pass", reasonCode: "—" },
+    ],
+  },
+  {
+    id: "near_miss",
+    label: "Date 2: Nearest Miss (11/12 Pass - Blocked by Z-Score)",
+    date: "2026-10-01",
+    status: "QUIET",
+    zscore: "+1.67",
+    adjSpread: "+0.000966",
+    rawSpread: "+0.000146",
+    carryAdj: "+0.000820",
+    carrySource: "CURVE (6.50% a.y.)",
+    auditSummary: "Audit: 11 / 12 Passed (Blocked by Z-Score: 1.67 vs 2.00 hurdle)",
+    gates: [
+      { name: "SPEC_OK", passed: true, value: "VERIFIED_OFFICIAL", threshold: "Official Spec", margin: "Pass", reasonCode: "—" },
+      { name: "DATA_QUALITY", passed: true, value: "Both OK (0 missing ticks)", threshold: "Not SUSPECT", margin: "Pass", reasonCode: "—" },
+      { name: "EXPIRY_PAIR_VALID", passed: true, value: "5 days gap", threshold: "≤ 35 days", margin: "+30 days", reasonCode: "—" },
+      { name: "HISTORY_SUFFICIENT", passed: true, value: "60 sessions", threshold: "≥ 30 sessions", margin: "+30 obs", reasonCode: "—" },
+      { name: "Z_SCORE_THRESHOLD", passed: false, value: "1.67", threshold: "≥ 2.00", margin: "-0.33", reasonCode: "Z_BELOW_THRESHOLD" },
+      { name: "LIQUIDITY_VOLUME_A", passed: true, value: "120 lots/day", threshold: "≥ 10 lots", margin: "+110 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_VOLUME_B", passed: true, value: "85 lots/day", threshold: "≥ 10 lots", margin: "+75 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_A", passed: true, value: "450 open lots", threshold: "≥ 50 lots", margin: "+400 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_B", passed: true, value: "320 open lots", threshold: "≥ 50 lots", margin: "+270 lots", reasonCode: "—" },
+      { name: "EXPIRY_SAFETY", passed: true, value: "25 days to tender", threshold: "> 5 days", margin: "+20 days", reasonCode: "—" },
+      { name: "COST_HURDLE", passed: true, value: "₹480.00 gross edge", threshold: "> ₹170.00 friction", margin: "+₹310.00", reasonCode: "—" },
+      { name: "DUPLICATE_CHECK", passed: true, value: "None active", threshold: "1 max open per desk", margin: "Pass", reasonCode: "—" },
+    ],
+  },
+  {
+    id: "blocked_anomaly",
+    label: "Date 3: Blocked Anomaly (High Z=2.85, Blocked by Safety)",
+    date: "2026-09-04",
+    status: "QUIET",
+    zscore: "+2.85",
+    adjSpread: "+0.001950",
+    rawSpread: "+0.001130",
+    carryAdj: "+0.000820",
+    carrySource: "CURVE (6.50% a.y.)",
+    auditSummary: "Audit: 10 / 12 Passed (BLOCKED by Illiquidity & Tender Expiry Window)",
+    gates: [
+      { name: "SPEC_OK", passed: true, value: "VERIFIED_OFFICIAL", threshold: "Official Spec", margin: "Pass", reasonCode: "—" },
+      { name: "DATA_QUALITY", passed: true, value: "Both OK (0 missing ticks)", threshold: "Not SUSPECT", margin: "Pass", reasonCode: "—" },
+      { name: "EXPIRY_PAIR_VALID", passed: true, value: "5 days gap", threshold: "≤ 35 days", margin: "+30 days", reasonCode: "—" },
+      { name: "HISTORY_SUFFICIENT", passed: true, value: "60 sessions", threshold: "≥ 30 sessions", margin: "+30 obs", reasonCode: "—" },
+      { name: "Z_SCORE_THRESHOLD", passed: true, value: "2.85", threshold: "≥ 2.00", margin: "+0.85", reasonCode: "—" },
+      { name: "LIQUIDITY_VOLUME_A", passed: false, value: "4 lots/day", threshold: "≥ 10 lots", margin: "-6 lots", reasonCode: "LIQUIDITY_VOLUME_A" },
+      { name: "LIQUIDITY_VOLUME_B", passed: true, value: "65 lots/day", threshold: "≥ 10 lots", margin: "+55 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_A", passed: true, value: "110 open lots", threshold: "≥ 50 lots", margin: "+60 lots", reasonCode: "—" },
+      { name: "LIQUIDITY_OI_B", passed: true, value: "290 open lots", threshold: "≥ 50 lots", margin: "+240 lots", reasonCode: "—" },
+      { name: "EXPIRY_SAFETY", passed: false, value: "3 days to tender", threshold: "> 5 days", margin: "-2 days", reasonCode: "EXPIRY_UNSAFE_A" },
+      { name: "COST_HURDLE", passed: true, value: "₹590.00 gross edge", threshold: "> ₹210.00 friction", margin: "+₹380.00", reasonCode: "—" },
+      { name: "DUPLICATE_CHECK", passed: true, value: "None active", threshold: "1 max open per desk", margin: "Pass", reasonCode: "—" },
+    ],
+  },
 ];
 
 export default function PairAnalysisPage() {
   const [selectedPair, setSelectedPair] = useState("GOLDTEN-GOLDM");
-  const [replayDate, setReplayDate] = useState("2026-10-01");
+  const [selectedScenarioIndex, setSelectedScenarioIndex] = useState(1); // default to nearest miss
+  const currentScenario = demoScenarios[selectedScenarioIndex];
+  const [replayDate, setReplayDate] = useState(currentScenario.date);
+
+  const handleScenarioChange = (idx: number) => {
+    setSelectedScenarioIndex(idx);
+    setReplayDate(demoScenarios[idx].date);
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Control Strip */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center space-x-3">
+      {/* Control Strip with Scenario Quick-Switcher */}
+      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={selectedPair}
             onChange={(e) => setSelectedPair(e.target.value)}
@@ -58,9 +145,33 @@ export default function PairAnalysisPage() {
             <option value="GOLDM-GOLDPETAL">GOLDM vs GOLDPETAL (Gap: 5 Days)</option>
           </select>
 
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-quiet-bg text-quiet border border-quiet-border">
-            STATUS: QUIET
-          </span>
+          {currentScenario.status === "ALERT" ? (
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-alert-bg text-alert border border-alert-border animate-pulse flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-alert animate-ping" />
+              STATUS: ALERT
+            </span>
+          ) : (
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-quiet-bg text-quiet border border-quiet-border">
+              STATUS: QUIET
+            </span>
+          )}
+
+          {/* Quick Scenario Buttons for Demo */}
+          <div className="flex items-center gap-1 bg-panel p-1 rounded-lg border border-gray-200 text-xs">
+            {demoScenarios.map((sc, idx) => (
+              <button
+                key={sc.id}
+                onClick={() => handleScenarioChange(idx)}
+                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                  selectedScenarioIndex === idx
+                    ? "bg-gold text-white font-bold shadow-xs"
+                    : "text-slate hover:text-ink hover:bg-gray-100"
+                }`}
+              >
+                Date {idx + 1}: {idx === 0 ? "Alert Day" : idx === 1 ? "Nearest Miss" : "Blocked Day"}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Replay Date Picker (Design §7 / PRD §10) */}
@@ -122,36 +233,40 @@ export default function PairAnalysisPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-ink">Carry & Spread</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gold-tint text-gold border border-gold-border">
-              CURVE (6.50% a.y.)
+              {currentScenario.carrySource}
             </span>
           </div>
           <div className="text-xs text-slate">Expiry Gap: 5 Calendar Days</div>
           <div className="text-sm font-mono font-bold text-ink">
-            Adj Log Spread: +0.000966
+            Adj Log Spread: {currentScenario.adjSpread}
           </div>
           <div className="text-[11px] text-slate font-mono">
-            Raw Spread: +0.000146 • 5-day Carry Adj: +0.000820
+            Raw Spread: {currentScenario.rawSpread} • Carry Adj: {currentScenario.carryAdj}
           </div>
           <div className="text-[11px] font-mono text-ink font-semibold">
-            Rolling Z-Score: <span className="text-amber-600">+1.67</span> (Hurdle ≥ 2.00)
+            Rolling Z-Score: <span className={currentScenario.status === "ALERT" ? "text-emerald-700 font-bold" : "text-amber-600"}>{currentScenario.zscore}</span> (Hurdle ≥ 2.00)
           </div>
         </div>
       </div>
 
-      {/* 11-Gate Waterfall Table (PRD R20 / Design §6.11) */}
+      {/* 12-Gate Waterfall Table (PRD R20 / Design §6.11) */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-ink flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-gold" />
-              11-Gate Risk & Liquidity Waterfall Evaluator (R20)
+              12-Gate Risk & Liquidity Waterfall Evaluator (R20)
             </h3>
             <p className="text-xs text-slate mt-0.5">
               Every gate is evaluated on every session. Status is ALERT only if all gates pass.
             </p>
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200">
-            Audit: 11 / 12 Passed (Blocked by Z-Score)
+          <span className={`text-xs font-bold px-2.5 py-1 rounded border ${
+            currentScenario.status === "ALERT"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+              : "bg-amber-50 text-amber-800 border-amber-200"
+          }`}>
+            {currentScenario.auditSummary}
           </span>
         </div>
 
@@ -168,7 +283,7 @@ export default function PairAnalysisPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-mono">
-              {gates.map((g) => (
+              {currentScenario.gates.map((g) => (
                 <tr key={g.name} className={g.passed ? "hover:bg-panel/40" : "bg-red-50/40"}>
                   <td className="py-2.5 px-4 font-sans font-bold text-ink">{g.name}</td>
                   <td className="py-2.5 px-3">
