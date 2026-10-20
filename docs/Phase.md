@@ -1,222 +1,168 @@
-# AurumLens — Phase-wise Execution Plan v2.0
+# AurumLens — Implementation Phases & Roadmap Specification v3.0
 
-> **Version:** 2.0 · **Date:** 2026-10-01 · **Supersedes:** v1
->
-> **Priority labels:**
-> - **[CORE]**: required for any demo.
-> - **[MVP+]**: v2 additions that are in MVP scope.
-> - **[STRETCH]**: only if time allows.
->
-> Work one phase at a time and stop at each exit gate.
+> **Version:** 3.0 · **Date:** 2026-10-20 · **Status:** Master Execution Plan  
+> **Supersedes:** Phase Plan v2.0 · **Aligned with:** `prompt.md` Section 10
 
 ---
 
-## Phase 0 — Source Verification & Project Freeze
-**Goal:** remove factual uncertainty before writing analytics.
+## 1. Execution Philosophy & Priority Tags
 
-### Tasks
-- [CORE] Fill the **facts register** (PRD §5) from official MCX/SEBI documents: unit, quote basis, purity, expiry rule, tender days, and tick size for all four contracts.
-- [CORE] Resolve **GOLDGUINEA purity** (F9). Until it is resolved, keep it `DISPUTED`.
-- [CORE] Read circular **MCX/TRD/456/2025** (launch-calendar change) and record its effect on expiries.
-- [CORE] Find the SEBI circular on the staggered delivery period (F12).
-- [CORE] Confirm how Bhavcopy is accessed **before and after October 2023**: URLs or methods, file names, columns and date formats. Save one sample file from each era to `data/fixtures/real_samples/` (real data, labeled as such).
-- [CORE] Confirm whether a settlement price field exists (F14).
-- [CORE] Record GOLDTEN's first appearance date in real data (F4).
-- [CORE] Draft the cost schedule (`costs.yaml`) with a status per value. Choose a default broker profile.
-- [CORE] Freeze the repo skeleton, config schemas (Pydantic), `.env.example`, pytest and the CI workflow.
-- [MVP+] Create `events.yaml` with candidate events (each `verified: false` until sourced).
+Work proceeds sequentially through 7 disciplined phases (Phase 0 to Phase 6). Each phase establishes concrete deliverables, automated test requirements, and a formal exit gate.
 
-### Exit Gate
-- One real trading day from **each** format era has been downloaded, parsed and checked by hand.
-- Every facts-register row has a status. `spec_mode` is set explicitly.
+### Priority Classifications:
+- **`[CORE]`**: Mandatory functionality required for baseline quantitative integrity and prototype demonstration.
+- **`[MVP+]`**: Essential usability and transparency features defined in the v3 product scope.
+- **`[STRETCH]`**: Advanced extensions delivered only after prior phases achieve 100% exit-gate compliance.
 
 ---
 
-## Phase 1 — Historical Data Engine
-**Goal:** a clean, versioned, contract-level historical dataset.
+## 2. Phase-by-Phase Execution Roadmap
 
-### Build
-- [CORE] Downloader with polite caching and a raw immutable store with sha256.
-- [CORE] `SourceAdapter` interface, with `legacy` and `cdp` adapters mapping to a canonical schema.
-- [CORE] Validator: requested date equals returned date, schema, types, symbol allow-list, expiry parsing.
-- [CORE] DuckDB schema (`source_file`, `contract`, `daily_price`) and Parquet dataset snapshots with a `dataset_version`.
-- [CORE] Reject/error log and ingestion report.
-- [MVP+] Price-quality stage: `price_source`, `SUSPECT` flags (FR18).
-
-### Tests
-- Date mismatch rejected; holiday or missing file handled.
-- Malformed schema rejected.
-- Symbol padding and cleanup.
-- Expiry parsing for both eras.
-- No duplicate `(contract_id, trade_date)`.
-- Only supported symbols kept.
-- Low-volume and close/settlement-divergence rows are flagged `SUSPECT`.
-
-### Exit Gate
-Several years of data for the supported contracts, with a validation report covering:
-- rows per symbol;
-- date range;
-- rejects;
-- duplicates (zero allowed silently);
-- SUSPECT counts.
+```mermaid
+flowchart LR
+    P0[Phase 0: Audit & Baseline Freeze] --> P1[Phase 1: Market Data & Charts]
+    P1 --> P2[Phase 2: Analytics & Signals]
+    P2 --> P3[Phase 3: Portfolio & Paper Trading]
+    P3 --> P4[Phase 4: Unified AurumLens AI]
+    P4 --> P5[Phase 5: Integration & Validation]
+    P5 --> P6[Phase 6: Live Data Readiness]
+```
 
 ---
 
-## Phase 2 — Normalization, Pairing, Carry & Sizing
-**Goal:** prove the contracts are compared correctly.
+### Phase 0 — Repository and Product Audit
+**Objective:** Establish a rock-solid, verified baseline of existing code, schemas, and tests before introducing architectural upgrades.
 
-### Build
-- [CORE] Contract master loaded from the facts register.
-- [CORE] Normalization to ₹/10 g of 999, including the **direction test**.
-- [CORE] Smallest-gap expiry matching with `max_expiry_gap_days`.
-- [CORE] Carry: implied from the same-symbol curve, else fallback, with `carry_source` recorded.
-- [CORE] Log spread (raw and adjusted).
-- [MVP+] Lot-ratio sizer and residual fine grams (FR24).
-- [MVP+] Converter function (FR22). The UI comes later.
-
-### Demo Artifact
-- A chart of normalized prices for all four contracts.
-- One pair's adjusted log spread, with carry source shading.
-
-### Exit Gate
-- All hand fixtures in Design §6 equal the engine output, including 120,482.41, the Nov-5 pairing, the 0.00014597 spread and the 4:5 ratio.
-- The team can explain each step.
+- **Tasks:**
+  - `[CORE]` Audit existing Python quant engine (`engine/src/aurumlens/`), test suite (117 tests), FastAPI service, and Next.js 14 frontend.
+  - `[CORE]` Verify the canonical **Facts Register** (`config/contracts.yaml`): contract trading units, quote bases, purities, expiry cycles, and tender window definitions.
+  - `[CORE]` Maintain strict `spec_mode` controls (handling `DISPUTED` status for GOLDGUINEA purity).
+  - `[CORE]` Verify historical MCX Bhavcopy parser adapters across both legacy (pre-Oct 2023) and modern TCS CDP eras.
+  - `[CORE]` Enforce zero-leak security posture via automated secrets scanning (`scripts/scan_secrets.py`).
+  - `[CORE]` Audit all 27 PRD baseline requirements via automated compliance script (`scripts/verify_fr_checklist.py`).
+- **Deliverables:**
+  - Clean baseline commit with 117+ unit tests passing in $< 10\text{ seconds}$.
+  - Verified Facts Register and frozen configuration models (`contracts.yaml`, `costs.yaml`, `strategy.yaml`).
+- **Exit Gate:** Automated rehearsal passes 3 consecutive rounds (`python scripts/rehearse_demo.py`) with zero P1 defects.
 
 ---
 
-## Phase 3 — Signal Engine
-**Goal:** turn relative pricing into selective, explainable decisions.
+### Phase 1 — Reliable Market Data and Interactive Charts
+**Objective:** Deliver an uncompromised market data layer and interactive chart component visualizing raw and normalized prices.
 
-### Build
-- [CORE] Rolling z-score using data through `t−1`, plus the optional MAD score.
-- [CORE] History sufficiency check.
-- [CORE] Itemized cost model and Corwin-Schultz slippage with fallback.
-- [CORE] Expected convergence to the rolling mean (R21).
-- [CORE] Liquidity, expiry/tender and cost-hurdle gates.
-- [CORE] **All-gate evaluator** with margins and reason codes (R20).
-- [CORE] Spec-mode gate (R24). Duplicate suppression.
-- [CORE] Evidence record builder.
-- [MVP+] Nearest-miss service (FR17).
-
-### Tests
-- A planted anomaly triggers. Ordinary days stay quiet.
-- A cost failure, a liquidity failure, an expiry failure and a SUSPECT price each block the alert.
-- A pair failing several gates reports all of them.
-- A constant structural offset never alerts.
-- Strict mode with a `DISPUTED` spec gives `SPEC_UNVERIFIED`.
-- Changing future data cannot change past signals.
-
-### Exit Gate
-Real examples of an `ALERT`, a `QUIET` with its nearest miss, and a tempting anomaly that was blocked, each with full gate evidence.
+- **Tasks:**
+  - `[CORE]` Standardize market data schemas: `contracts`, `market_data_daily`, and `candle_ticks`.
+  - `[CORE]` Implement price quality pipeline: source selection (settlement vs close) and `SUSPECT` flagging (low volume, low OI, price gaps).
+  - `[CORE]` Implement stale feed detection: raise UI warnings when exchange updates lag schedule.
+  - `[CORE]` Build interactive Candlestick & Volume chart component accepting application-supplied JSON datasets.
+  - `[CORE]` Build Dual-Mode Toggle: switch effortlessly between raw exchange prices and normalized ₹/10g 999 equivalent prices.
+  - `[MVP+]` Implement relative spread and statistical deviation windows displaying rolling mean $\mu_{t-1}$ and $\pm 2\sigma_{t-1}$ bands.
+  - `[MVP+]` Support multi-timeframe controls (1D, 1W, 1M, 6M, 1Y, All) with smooth pan/zoom and crosshair tooltips.
+  - `[MVP+]` Render explicit loading skeletons, empty data states, and data status badges (`Historical`, `Delayed 15m`, `Simulated`).
+- **Deliverables:**
+  - Fully functional Next.js Interactive Chart suite connected to verified historical Parquet/DuckDB backend data.
+  - Test suite covering price quality evaluator and candle formatting.
+- **Exit Gate:** Chart renders 5 years of daily data smoothly across all 4 contracts; raw vs normalized toggle verified mathematically.
 
 ---
 
-## Phase 4 — Walk-forward Backtesting
-**Goal:** determine whether the method survives unseen data and costs.
+### Phase 2 — Analytics Verification and Explainable Signals
+**Objective:** Confirm relative-value quant algorithms, 12-gate waterfall evaluator, and explainability records.
 
-### Build
-- [CORE] Chronological fold builder. Train-only selection; frozen parameters per fold.
-- [CORE] **Trial registry**: every config tried is logged.
-- [CORE] `t+1` execution with slippage. Actual contracts and integer lots.
-- [CORE] Exits: reversion, time stop, unsafe window.
-- [CORE] Itemized costs. Attribution: strategy vs residual gold.
-- [CORE] Final untouched holdout, reported separately.
-- [MVP+] Baselines: always-quiet, and seeded random entry (FR21).
-- [MVP+] Metrics: Sharpe, max drawdown, hit rate and the **Deflated Sharpe Ratio**.
-- [STRETCH] Sensitivity heatmap on training folds only (FR29).
-
-### Required Outputs
-- Gross P&L, costs (itemized), slippage, net P&L.
-- Strategy P&L and residual gold P&L.
-- Fold metrics, holdout metrics, baseline comparison and DSR.
-- Trade ledger.
-
-### Exit Gate
-- No-leakage tests pass.
-- Results reproduce exactly from dataset version plus config version.
-- A negative result is acceptable and must be shown honestly.
+- **Tasks:**
+  - `[CORE]` Verify price normalization formula $P \times (10/\text{basis}) \times (0.999/\text{purity})$ with purity direction test.
+  - `[CORE]` Verify smallest calendar gap expiry pairing algorithm ($\Delta T \le 35\text{ days}$).
+  - `[CORE]` Implement curve carry calculation $r_{\text{curve}}$ with graceful fallback to $r_{\text{fallback}}$ and source labeling.
+  - `[CORE]` Implement adjusted log spread and rolling Z-score / MAD deviation using history through $t-1$ strictly.
+  - `[CORE]` Verify integer lot-ratio sizer minimizing unhedged residual fine gold grams.
+  - `[CORE]` Apply itemized statutory transaction friction (brokerage, exchange, SEBI, sell-only CTT, buy-only stamp, GST).
+  - `[CORE]` Implement Corwin-Schultz (2012) bid-ask spread estimator with configurable fallback bps.
+  - `[CORE]` Execute the complete **12-Gate Waterfall Evaluator**: evaluate all gates simultaneously, storing margins and reason codes.
+  - `[CORE]` Build Nearest-Miss service: rank non-alerting pairs by gates passed and narrowest failing ratio.
+  - `[MVP+]` Generate bilingual plain English and Hindi signal explanations.
+  - `[MVP+]` Enforce regex `NumericGuard` auditing all generated explanation strings.
+- **Deliverables:**
+  - Complete signal pipeline outputting binary `ALERT` or `QUIET` decisions with full evidence dossiers.
+  - Comprehensive unit test suite covering hand fixtures (GOLDM ₹120,482.41, Nov-5 pairing, 4:5 lot ratio).
+- **Exit Gate:** 100% of analytical unit tests pass; constant basis offset never alerts; zero look-ahead bias confirmed.
 
 ---
 
-## Phase 5 — API & Dashboard
-**Goal:** a usable, judge-friendly product.
+### Phase 3 — Portfolio Management and Paper Trading Simulation
+**Objective:** Provide a realistic simulated trading environment to evaluate hypothetical trades and monitor portfolio risk.
 
-### Build
-- [CORE] FastAPI endpoints (Design §7), with bounded inputs and admin token.
-- [CORE] Screens: Overview, Pair Analysis (with **gate waterfall**), Backtest, Calendar, Alert Log.
-- [CORE] Replay date selector. Data freshness indicator. Spec-mode watermark. Disclaimer.
-- [MVP+] Cost breakdown panel (FR19), spec trust and Data Health screen (FR20, FR18).
-- [MVP+] Hedge Tools screen: converter, cheapest-to-hedge, lot sizer (FR22–FR24).
-- [MVP+] Event markers on charts and calendar (FR25).
-- [MVP+] Methodology page.
-
-### Exit Gate
-- A non-trader understands the system status, and one signal, within about 30 seconds.
-- Everything works offline from cache.
-
----
-
-## Phase 6 — Explanations, Alerts & Paper Trading
-**Goal:** an operational workflow without real-money execution.
-
-### Build
-- [MVP+] Deterministic English/Hindi explainer, plus the numeric guard (FR26).
-- [MVP+] Evidence pack export as CSV and HTML (FR27).
-- [CORE] Telegram alert adapter behind an interface.
-- [CORE] `PaperExecutionAdapter`: two-leg simulated orders, fills, position state, exits, P&L.
-- [CORE] Duplicate-execution protection, audit log, and representable partial or failed legs.
-- [STRETCH] Daily Telegram digest (FR30), paper journal timeline (FR31).
-
-### Exit Gate
-- A replayed historical alert flows through: signal → explanation (EN/HI) → paper position → exit → stored P&L → exported evidence pack.
+- **Tasks:**
+  - `[CORE]` Implement simulated portfolio ledger: cash balance, margin utilization, open positions, and realized/unrealized P&L.
+  - `[CORE]` Implement Two-Phase Staged Order Flow: stage candidate paper trades requiring explicit user confirmation before commitment.
+  - `[CORE]` Record entry price, adverse slippage fill, itemized round-trip fees, and residual fine gold exposure on every position.
+  - `[CORE]` Implement Mark-to-Market (MTM) calculation engine updating only when valid market prices exist.
+  - `[CORE]` Implement trade closure engine recording exit reasons (`CONVERGENCE`, `STOP_LOSS`, `EXPIRY_WINDOW`, `USER_CLOSED`).
+  - `[MVP+]` Build Portfolio Risk Controls: enforce max risk per trade (e.g. 2% of equity) and max portfolio notional exposure.
+  - `[MVP+]` Implement What-If Scenario Stress Testing: simulate user-defined price shocks (e.g. -2% gold move) and carry spikes.
+  - `[MVP+]` Construct walk-forward backtesting engine with expanding window folds, baseline benchmarking, and Deflated Sharpe Ratio (DSR).
+- **Deliverables:**
+  - Complete Paper Trading and Portfolio Snapshot UI in Next.js.
+  - Deterministic portfolio reconciliation service matching all transactions to recorded fees.
+- **Exit Gate:** Simulated portfolio reconciles cash, fees, and P&L with 100% precision; what-if stress tester calculates accurate delta exposure.
 
 ---
 
-## Phase 7 — Hardening & Demo
-**Goal:** make the project safe to judge.
+### Phase 4 — Unified AurumLens AI Chatbot
+**Objective:** Deploy a single conversational AI assistant ("AurumLens AI") unifying trading education, signal explainability, and paper portfolio management.
 
-### Tasks
-- Full FR checklist (FR1–FR27). Test suite. Secret scan. Input-bound review.
-- Performance check (full backtest under 60 s). Offline-mode check. Lineage spot-check. Reproducibility check.
-- Pick three **real** demo dates (never altered):
-  1. a clear gated alert;
-  2. a quiet day with an interesting nearest miss;
-  3. a tempting anomaly blocked by liquidity, expiry or a stale price.
-- Prepare one hedge-tool scenario (for example, "hedge 500 g").
-- Screenshots, backup demo video, methodology slide, architecture diagram, known-limitations slide.
-- [STRETCH] Replay player (FR28). Spot premium (FR32), only if a source has been verified.
-
-### Exit Gate
-The full demo succeeds offline three times in a row, with no P1 bugs.
-
-### Suggested 3-minute pitch
-1. **Hook:** "Gold is gold — so why do four MCX gold contracts disagree?"
-2. **Normalize:** the converter shows one price expressed in all four contracts.
-3. **Evidence:** replay an alert day and walk through the gate waterfall and costs.
-4. **Rigor:** show the blocked day, then the backtest against baselines, including a no-edge result if that is the truth.
-5. **Utility:** the cheapest-to-hedge calculator, and the Hindi explanation.
+- **Tasks:**
+  - `[CORE]` Build single conversational interface (dockable slide-over / expandable drawer) embedded in the dashboard.
+  - `[CORE]` Implement autonomous Intent Classifier routing queries across Education, Market Analysis, Portfolio, and Simulation.
+  - `[CORE]` Construct approved deterministic Tool Registry:
+    - `get_market_overview`
+    - `get_contract_metadata`
+    - `get_pair_analysis`
+    - `get_signal_evidence`
+    - `get_nearest_misses`
+    - `get_portfolio_summary`
+    - `get_open_positions`
+    - `simulate_risk_scenario`
+    - `stage_paper_order`
+  - `[CORE]` Implement Grounding Prompt & Strict NumericGuard post-processor: verify that all emitted numbers exist in backend tool JSON.
+  - `[CORE]` Enforce mandatory timestamp and data status labels on every market statement.
+  - `[CORE]` Implement interactive Staged Paper Order confirmation cards in the chat UI.
+  - `[MVP+]` Support multi-turn conversational context memory (remembering active pair, timeframe, and user portfolio).
+  - `[MVP+]` Add graceful degraded responses for stale market feeds and out-of-scope broker execution requests.
+- **Deliverables:**
+  - Working AurumLens AI chatbot dock integrated into Next.js frontend and FastAPI microservice.
+  - Automated test suite validating intent routing, tool execution, and NumericGuard rejection of ungrounded numbers.
+- **Exit Gate:** Chatbot answers all benchmark user queries accurately; zero financial hallucinations; trade confirmation cards render reliably.
 
 ---
 
-## Phase 8 — Post-MVP Live Execution (Future, design only)
-**Not part of the hackathon MVP.**
+### Phase 5 — System Integration, Security & Performance Validation
+**Objective:** Harden the end-to-end multi-tier stack, enforce security policies, and validate performance benchmarks.
 
-**Prerequisites:**
-- stable paper-trading results;
-- broker API, legal and compliance checks;
-- an execution-quality study;
-- a margin model;
-- a risk review.
+- **Tasks:**
+  - `[CORE]` Verify Row Level Security (RLS) policies on Supabase PostgreSQL: anon client restricted to read-only; user portfolio records strictly isolated.
+  - `[CORE]` Audit client-side bundles: assert zero service-role keys or private credentials exist in `web/`.
+  - `[CORE]` Execute secrets scan across 100% of repository files.
+  - `[CORE]` Enforce rate limiting and abuse controls on API and chatbot endpoints.
+  - `[CORE]` Validate system performance metrics:
+    - FastAPI tool endpoints response time $< 150\text{ ms}$.
+    - Daily signal generation across all pairs $< 3\text{ seconds}$.
+    - Full 5-year walk-forward backtest $< 60\text{ seconds}$.
+  - `[CORE]` Conduct accessibility audit: ensure WCAG 2.1 AA compliance, keyboard navigation, and color-independent alert badges.
+- **Deliverables:**
+  - Comprehensive verification checklist report and updated demo runbook.
+  - Production-ready Docker packaging and one-click launch scripts (`run_demo.bat` / `run_demo.ps1`).
+- **Exit Gate:** Automated rehearsal passes 3 consecutive offline passes with 100% pass rate across unit tests, security scans, and build tasks.
 
-**Components:**
-- Risk Manager;
-- Broker Adapter;
-- Pair Order Manager;
-- partial fills;
-- reconciliation;
-- Exit Engine;
-- slippage, position and daily-loss limits;
-- kill switch;
-- audit log.
+---
 
-**Rule:** never enable live execution just because a backtest is profitable.
+### Phase 6 — Live Data Readiness (Future Production Tier)
+**Objective:** Prepare data architecture for authorized real-time market data vendor integration.
+
+- **Tasks:**
+  - `[MVP+]` Formalize vendor selection criteria for authorized Indian market data providers (TruData, Global DataFeeds).
+  - `[MVP+]` Establish data licensing compliance: differentiate Display vs Non-Display vs Derived Data usage.
+  - `[MVP+]` Design WebSocket feed ingestion service with heartbeat monitoring, automatic reconnects, and sequence gap recovery.
+  - `[STRETCH]` Build automated feed reconciliation engine comparing live tick data against official end-of-day settlement files.
+- **Deliverables:**
+  - Live data ingestion abstraction layer and licensing audit report (`DataSourcesAndLicensing.md`).
+- **Exit Gate:** Real-time data pipeline architecture fully documented; exchange compliance guidelines established.

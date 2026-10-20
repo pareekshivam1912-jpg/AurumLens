@@ -1,319 +1,219 @@
-# AurumLens — Product Requirements Document (PRD) v2.0
+# AurumLens — Product Requirements Document (PRD) v3.0
 
-> **Version:** 2.0 (MVP revision) · **Date:** 2026-10-01 · **Supersedes:** PRD v1
-> **What changed:** see `CHANGELOG.md`. In short, v2:
-> - fixes the normalization direction and expiry pairing;
-> - adds a facts register and data-quality rules;
-> - makes all gates evaluate fully;
-> - adds hedging tools and an explainability layer;
-> - keeps walk-forward validation, adding the Deflated Sharpe Ratio as a reported metric.
+> **Version:** 3.0 · **Date:** 2026-10-20 · **Status:** Master Specification  
+> **Supersedes:** PRD v2.0 · **Aligned with:** `prompt.md` Master Implementation Vision
 
 ---
 
-## 1. Product Summary
-**AurumLens** is an MCX gold relative-value intelligence platform. It compares GOLDM, GOLDTEN, GOLDGUINEA and GOLDPETAL on a common fine-gold price basis. Before comparing, it adjusts for contract specifications, expiry differences and carry. It flags cross-contract pricing as unusual only when the apparent edge survives modeled costs, slippage, liquidity filters and expiry/tender safety rules.
+## 1. Executive Summary & Product Vision
 
-There is a secondary MVP use case: **hedging-cost analytics**. A jeweller or bullion participant can see what it costs to hedge a given quantity of gold through each contract, and how much gold would be left unhedged.
+**AurumLens** is an institutional quantitative intelligence, relative-value analytics, and portfolio risk management platform designed for Multi Commodity Exchange (MCX) gold derivatives and related physical gold instruments.
 
-AurumLens is **not a gold-direction prediction system**. It never claims that gold will rise or fall. It is analytics, not investment advice.
+Gold is chemically homogeneous, yet MCX gold contracts trade at divergent prices due to disparate lot sizes, differing delivery purities (995 vs 999), varying quote conventions, differing contract expiry dates, calendar carry structures, and asymmetric Indian statutory transaction taxes. 
 
-## 2. Product Objective
-Build a reproducible system that:
-1. Ingests and validates MCX Bhavcopy data, both before and after the October 2023 platform migration.
-2. Stores data by `(symbol, expiry_date, trade_date)`.
-3. Normalizes every contract to **₹ per 10 g of 999 fine gold**.
-4. Pairs contracts with the **smallest expiry gap** and adjusts for carry.
-5. Calculates the log basis/spread and an anomaly score using history through `t-1` only.
-6. Evaluates **every** gate and produces a `QUIET` or `ALERT` decision with full evidence.
-7. Explains quiet days through a "nearest miss" view, not only alert days.
-8. Validates the method with walk-forward backtesting net of costs, against simple baselines.
-9. Explains every signal with traceable evidence, in plain English and Hindi.
-10. Provides hedging tools: a contract converter, a cheapest-to-hedge calculator and a lot-ratio sizer.
-11. Presents results in a judge-friendly dashboard with replay.
-12. Supports paper-trade simulation. Real broker execution remains a post-MVP extension.
+AurumLens provides traders, bullion desks, and jewelry manufacturers with a transparent, data-backed platform that:
+1. Standardizes all contracts onto a common physical basis (**₹ per 10 grams of 999 fine gold**).
+2. Isolates true structural dislocations using an **12-Gate Waterfall Risk & Economic Evaluator**.
+3. Delivers an **Interactive Charting Suite** comparing raw contracts, normalized analytical spreads, and Z-score deviation bands.
+4. Manages hypothetical simulated portfolios with **Paper Trading and Stress Testing** ("what-if" risk analysis).
+5. Provides **One Unified AI Chatbot ("AurumLens AI")** uniting trading education, signal explainability, market diagnostics, and portfolio risk management.
 
-## 3. Target Users
-| User | Primary need | Main screens |
+### Foundational Philosophy
+- **Analytics Only — Not Investment Advice:** AurumLens does not predict market direction and never guarantees trading outcomes.
+- **Paper Trading First:** No real-money broker order placement in initial releases.
+- **Zero Hallucination:** Every price, signal, P&L metric, and risk score comes from deterministic backend engines, never from language model guesses.
+
+---
+
+## 2. Core Product Principles (Rule R1–R8)
+
+1. **Data-backed, Not Hallucinated:** Prices, indicators, signals, positions, P&L, and risk metrics must originate exclusively from verified application data or deterministic calculations.
+2. **Explainable Decisions:** Every signal record must display its underlying evidence, assumptions, thresholds, timestamps, and filter evaluations.
+3. **Risk-First Design:** A high statistical Z-score is not automatically a trading signal. Liquidity, transaction costs, expiry tender rules, slippage, and basis risk must all pass gating thresholds.
+4. **Clear Data Status:** All displayed data must be explicitly labeled as **Live**, **Delayed**, **Historical**, **Simulated**, or **Unavailable**. Demo data must never be presented as live market feeds.
+5. **Paper Trading First:** All execution workflows operate strictly within a simulated paper-trading environment.
+6. **One Assistant:** Trading education, signal explanation, market analysis, portfolio monitoring, and risk simulations must all be accessible through a single unified chatbot interface.
+7. **Auditable Behavior:** Every calculation, signal decision, data-quality event, and simulated portfolio mutation must be traceable to versioned configs and immutable audit logs.
+8. **No Guaranteed Outcomes:** The system strictly prohibits claims of guaranteed profit, certain reversals, or risk-free arbitrage.
+
+---
+
+## 3. Target Users & Personas
+
+| Persona | Primary Needs & Use Cases | Key Features Used |
 |---|---|---|
-| Retail MCX gold traders | Is any contract unusually rich or cheap after costs? | Overview, Pair Analysis, Alerts |
-| Small prop/arbitrage desks | Evidence, backtest, cost realism | Backtest, Evidence export |
-| Jewellers / bullion hedgers | Cheapest and most precise way to hedge N grams | Hedge Tools |
-| Finance students / researchers | Transparent, reproducible methodology | Methodology, Backtest |
+| **Active Commodity Traders** | Identifies whether cross-contract spread divergence exceeds round-trip friction and slippage; evaluates mean-reversion signals. | Interactive Chart, Signal Monitor, 12-Gate Waterfall, Paper Trading |
+| **Jewelers & Physical Bullion Desks** | Seeks the cheapest contract to hedge physical inventory (e.g. 500g); calculates exact lot ratios and unhedged residual gold. | Hedge Tools (Cheapest-to-Hedge, Lot Sizer, Parity Converter) |
+| **Prop & Quantitative Desks** | Requires walk-forward backtest integrity, itemized P&L attribution, Deflated Sharpe Ratio (DSR), and leak-free validation. | Backtest Engine, Trial Registry, Evidence Exporter (CSV/HTML) |
+| **Market Learners & Analysts** | Desires clear educational explanations of calendar carry, basis, Z-scores, and reasons why candidate signals were rejected. | Unified AurumLens AI Chatbot, Methodology DAG |
 
-## 4. MVP Contract Universe
-GOLDM, GOLDTEN, GOLDGUINEA, GOLDPETAL.
+---
 
-Contract specifications are configuration-driven. Each must be verified against official MCX material before it is used for analysis (see §5).
+## 4. Contract Universe & Market Scope
 
-## 5. Facts Register (status as of v2)
-Every external fact the analytics depend on is tracked with one of these statuses:
-- `VERIFIED_OFFICIAL`: confirmed from an MCX or SEBI document.
-- `SECONDARY`: from a broker or research source.
-- `DISPUTED`: sources disagree.
-- `TO_VERIFY`: unknown.
+### 4.1 The 4 MCX Gold Futures Contracts
+| Contract Symbol | Trading Unit | Quote Basis | Purity / Fineness | Expiry Cycle | Status in Facts Register |
+|---|---|---|---|---|---|
+| **GOLDM** (Gold Mini) | 100 grams | ₹ per 10 g | 0.995 (995 fineness) | 5th of contract month | `VERIFIED_OFFICIAL` |
+| **GOLDTEN** | 10 grams | ₹ per 10 g | 0.999 (999 fineness) | Last trading day of month | `VERIFIED_OFFICIAL` |
+| **GOLDGUINEA** | 8 grams | ₹ per 8 g | 0.999 / 0.995 (Disputed) | Last trading day of month | `DISPUTED` (candidates 0.995 / 0.999) |
+| **GOLDPETAL** | 1 gram | ₹ per 1 g | 0.999 (999 fineness) | Last trading day of month | `VERIFIED_OFFICIAL` |
 
-Only `VERIFIED_OFFICIAL` facts may drive results shown as real. The other statuses are allowed in research mode, with a watermark (see R24).
+### 4.2 Spec Mode Enforcement (Rule R24)
+- **`spec_mode = strict`:** Any contract with a non-`VERIFIED_OFFICIAL` spec (e.g. GOLDGUINEA) forces a `QUIET` decision (`SPEC_UNVERIFIED`).
+- **`spec_mode = research`:** Calculations proceed using candidate values (e.g. 0.999), but every generated screen, report, and signal is explicitly watermarked as `RESEARCH SIMULATION`.
 
-| ID | Fact | Current value (unconfirmed unless stated) | Status | Notes |
-|---|---|---|---|---|
-| F1 | GOLDM trading unit / quote basis | 100 g / ₹ per 10 g | SECONDARY | Broker sources agree |
-| F2 | GOLDM expiry | 5th of contract month | SECONDARY | |
-| F3 | GOLDTEN unit / quote basis | 10 g / ₹ per 10 g | SECONDARY | |
-| F4 | GOLDTEN launch date | April 2025 | SECONDARY | Confirm from MCX circular and first Bhavcopy appearance |
-| F5 | GOLDGUINEA unit / quote basis | 8 g / ₹ per 8 g | SECONDARY | |
-| F6 | GOLDPETAL unit / quote basis | 1 g / ₹ per 1 g | SECONDARY | |
-| F7 | GUINEA / PETAL / TEN expiry | Last day of contract month | SECONDARY | Check circular MCX/TRD/456/2025 (launch calendar modification) |
-| F8 | Purity: GOLDM | 995 | SECONDARY | |
-| F9 | Purity: GOLDGUINEA | 995 base with 999/995 premium **or** 999 | **DISPUTED** | Changes normalization by about 0.4% |
-| F10 | Purity: GOLDTEN, GOLDPETAL | 999 | SECONDARY | |
-| F11 | Delivery premium for 999 delivered against a 995 contract | Rate × 999/995 | SECONDARY | |
-| F12 | Staggered delivery / tender period | Last 3 trading days (from Jan 2025 expiries; previously 5) | SECONDARY | SEBI circular to be located |
-| F13 | Bhavcopy schema change | MCX moved to the TCS CDP platform in October 2023 | SECONDARY | Exact date and columns from real files |
-| F14 | Settlement price field in Bhavcopy | Unknown | TO_VERIFY | Determines the price source (R19) |
-| F15 | Coin making-charge premium in GUINEA/PETAL | Unknown | TO_VERIFY | A stable premium is absorbed by the rolling mean (R21) |
-| F16 | Cost schedule (brokerage, CTT, exchange, SEBI, stamp, GST) | See `config/costs.yaml` candidates | SECONDARY | Brokerage is broker-specific |
+---
 
-## 6. Core Product Principle
-**Same underlying commodity, different contract designs.**
+## 5. Core Dashboard Requirements
 
-Raw contract prices must never be compared directly. Every comparison accounts for:
-- quote basis
-- trading unit
-- purity
-- expiry date
-- carry
-- price freshness
-- liquidity
-- transaction costs
-- slippage
-- lot-ratio mismatch
-- tender/expiry risk
+The dashboard is structured into four primary synchronized workspaces:
 
-## 7. Locked Analytical Rules
-
-### Carried forward from v1 (unchanged meaning)
-- **R1 Gold-only MVP.** Only the four contracts above are analyzed.
-- **R2 Contract-level identity.** Store observations by `symbol + expiry_date + trade_date`. Never build the core model on a stitched continuous series.
-- **R3 Validate source dates.** The requested date must equal the returned Bhavcopy date. Holiday, invalid or malformed responses are rejected and logged.
-- **R4 Normalize before comparison.** See R16 for the exact basis and direction.
-- **R5 Expiry-aware matching.** Superseded in detail by R17.
-- **R6 Carry adjustment.** Superseded in detail by R18.
-- **R7 Historical anomaly score.** Rolling z-score, with an optional robust median/MAD variant, using information through `t-1` only.
-- **R8 A statistical anomaly is not sufficient** to produce an actionable alert.
-- **R9 Cost hurdle.** Expected convergence must exceed `round-trip costs + slippage + safety buffer`.
-- **R10 Liquidity gate.** Both legs must pass the volume and OI requirements. A settlement price is not an executable fill.
-- **R11 Expiry/tender safety.** Block signals inside the configured unsafe window.
-- **R12 Quiet by default.** If any required gate fails or an input is missing, the status is `QUIET`.
-- **R13 No look-ahead.**
-- **R14 Walk-forward validation** with rolling train/test folds and a final untouched holdout.
-- **R15 Honest results.** Report gross, costs, slippage, net, strategy P&L and residual gold P&L separately. "No persistent edge after costs" is a valid result.
-
-### New in v2
-- **R16 Normalization basis and direction.** The common basis is **₹ per 10 g of 999 fine gold**:
-  `P_norm = P_quoted × (10 / quote_basis_g) × (0.999 / purity)`.
-  A lower-purity contract normalizes **upward**. For example, GOLDM at 995 gives × 0.999/0.995 = × 1.00402. A unit test must assert this direction.
-- **R17 Smallest-gap expiry pairing.** For each pair and date, choose the combination of active contracts with the **smallest absolute expiry gap**, subject to a configured `max_expiry_gap_days`. Example: GOLDTEN Oct-31 pairs with GOLDM **Nov-5** (5 days), not Oct-5 (26 days).
-- **R18 Carry source hierarchy.**
-  1. Implied carry from the same symbol's own term structure on date `t`, when two liquid expiries exist.
-  2. Otherwise, a configured fallback rate.
-
-  Every row records `carry_source ∈ {CURVE, FALLBACK}`. Optionally, `FALLBACK` can be configured to block alerts.
-- **R19 Price source and freshness.** Use settlement price when the Bhavcopy provides it, otherwise close. The choice is configured and recorded per row. A price is `SUSPECT` (and the pair is `QUIET`) in either case:
-  - volume is below `min_volume_for_price`;
-  - close and settlement diverge by more than `stale_gap_threshold`.
-- **R20 Evaluate every gate.** All gates run on every pair-day, even after one fails. The decision is `ALERT` only if all pass. Every failure is stored as a reason code, and the margin by which each gate passed or failed is also stored.
-- **R21 Converge to the rolling mean, not zero.** Expected convergence is measured from the current spread to the rolling mean through `t-1`. A persistent structural premium (for example, coin making charges) is therefore not treated as mispricing.
-- **R22 Lot ratio and residual exposure.** Every simulated position uses an integer lot ratio that minimizes the leftover unhedged fine grams. The residual is reported and attributed as residual gold P&L.
-- **R23 Stationarity tests are diagnostics, not gates.** ADF and Engle-Granger results may be shown, computed only on training or `≤ t-1` data. They never decide an alert.
-- **R24 Spec strictness mode.**
-  - `spec_mode: strict`: any contract whose spec status is not `VERIFIED_OFFICIAL` forces `QUIET`, with reason `SPEC_UNVERIFIED`.
-  - `spec_mode: research`: computation is allowed, but every output and screen carries a visible "unverified specs" watermark.
-- **R25 Explanations never compute numbers.** Plain-language explanations (template-based, optionally rewritten by an LLM) are produced only from the stored signal JSON. Every number in an explanation must appear in that JSON.
-
-## 8. Spread Definition
-`s_t = ln(P_norm_A) − ln(P_norm_B) + carry_adj_t`
-
-Here `carry_adj_t = r_t × (T_B − T_A) / 365`, where `T` is the expiry date of each leg and `r_t` comes from R18.
-
-`z_t = (s_t − mean(s_{t−L..t−1})) / std(s_{t−L..t−1})`, where `L = lookback_window`.
-
-## 9. Parameters — Configurable, Not Hard-coded
-Every value below lives in versioned config. Values marked `TO_VALIDATE` are placeholders and not business rules.
-
-| Group | Parameters |
-|---|---|
-| Scoring | `lookback_window`, `min_history_obs`, `entry_z`, `exit_z`, `score_method` (`zscore`/`mad`) |
-| Pairing / carry | `max_expiry_gap_days`, `carry_fallback_rate`, `block_on_carry_fallback` |
-| Price quality | `price_source` (`settlement`/`close`), `min_volume_for_price`, `stale_gap_threshold` |
-| Liquidity | `min_volume` (absolute or percentile), `min_oi`, `volume_sma_days` |
-| Expiry | `unsafe_expiry_window_days` (proposed 5 = 3-day tender window + 2-day buffer, `TO_VALIDATE`) |
-| Costs | brokerage (flat/percent/cap), CTT, exchange, SEBI, stamp, GST rates; `safety_buffer` |
-| Slippage | `slippage_model` (`corwin_schultz`/`fixed_bps`), `fallback_bps` per symbol, `cs_window` |
-| Convergence | `convergence_capture_ratio` (share of the gap to the mean expected to close) |
-| Holding / backtest | `max_holding_days`, `train_window`, `test_window`, `holdout_start`, `execution_price` |
-| Sizing | `max_lots_per_leg`, `max_notional_inr` |
-| Modes | `spec_mode` (`strict`/`research`) |
-
-## 10. Signal Decision
-```text
-spec ok (per spec_mode)
-AND valid data AND prices not SUSPECT
-AND valid expiry pair (gap ≤ max_expiry_gap_days)
-AND sufficient history
-AND |z| ≥ entry_z
-AND both legs pass liquidity
-AND both legs outside the unsafe expiry/tender window
-AND expected convergence > costs + slippage + safety buffer
-AND not a duplicate of an open alert
-=> ALERT, otherwise QUIET
 ```
-All conditions are evaluated (R20). The UI shows them as a **gate waterfall**.
+┌────────────────────────────────────────────────────────────────────────┐
+│                        AURUM LENS DASHBOARD                            │
+├────────────────────────────────────────────────────────────────────────┤
+│ A. MARKET OVERVIEW STRIP                                               │
+│ [Status: QUIET/ALERT] [Last Update: 15:45 IST] [Feed: Historical/Live] │
+│ [Contract Tickers: GOLDM, GOLDTEN, GOLDGUINEA, GOLDPETAL]             │
+├──────────────────────────────────┬─────────────────────────────────────┤
+│ B. INTERACTIVE CHART COMPONENT   │ C. SIGNAL MONITOR                   │
+│ - Candlesticks & Volume          │ - Active Signals & Nearest Misses   │
+│ - Raw vs Normalized Toggle       │ - 12-Gate Waterfall Breakdown       │
+│ - Spread & Z-Score Overlays      │ - Blocking Reason Codes             │
+│ - Entry/Exit & Stop Markers      │ - Economic Hurdle Analysis          │
+├──────────────────────────────────┴─────────────────────────────────────┤
+│ D. PORTFOLIO SNAPSHOT & RISK RUNNER                                    │
+│ [Simulated Cash: ₹10,00,000] [Open Positions: 2] [Unrealized P&L: +₹4,820]│
+│ [Risk Stress Test: -2% Gold Drop ➔ Projected Impact: -₹1,240]          │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-## 11. Signal Output (Evidence Record)
-Each pair-day record, whether `ALERT` or `QUIET`, contains:
-- **Identity:** pair, trade date, actual contracts and expiries, expiry gap.
-- **Prices:** quoted prices, price source and quality flag, normalized prices.
-- **Spread and score:** carry value and `carry_source`, unadjusted and adjusted log spread, rolling mean/std, z-score, which leg is rich and which is cheap.
-- **Economics:**
-  - expected convergence in ₹;
-  - cost breakdown per component;
-  - slippage estimate and the model used;
-  - safety buffer;
-  - net expected edge.
-- **Liquidity:** volume, volume SMA and OI for both legs.
-- **Expiry:** days to expiry for each leg.
-- **Sizing:** lot ratio and residual fine grams.
-- **Gates:** pass/fail and margin for every gate, plus reason codes.
-- **Nearest miss:** how close the pair came to alerting.
-- **Versioning:** config version, dataset version, and the source file hash for each leg.
+### 5.1 Section A: Market Overview
+- Real-time or snapshot data status indicator (`Historical`, `Delayed 15m`, `Live Authorized`, `Unavailable`).
+- Contract metadata badges displaying lot size, quote unit, delivery purity, and days to next expiry.
+- Market session status indicators (Normal Trading, Tender Period, Market Closed).
+- Stale feed and inconsistent data warning banners.
 
-## 12. Backtest Rules
-- The signal is calculated from day `t` information. Simulated entry happens at `t+1` using `execution_price` (settlement or close), adjusted adversely by modeled slippage.
-- Store the actual contracts held and the integer lot quantities.
-- Exit on whichever comes first:
-  - reversion (`|z| ≤ exit_z`);
-  - time stop (`max_holding_days`);
-  - entering the unsafe expiry window.
-- Persist every simulated trade.
-- Report gross P&L, costs, slippage, net P&L, strategy (spread) P&L and residual gold P&L separately.
-- **Baselines (mandatory):**
-  - "always quiet" (₹0);
-  - "random entry with the same holding rules and costs" (seeded, many runs).
-- **Metrics:** net P&L, trade count, hit rate, average net per trade, max drawdown, Sharpe, and the **Deflated Sharpe Ratio**, computed from the number of configurations logged in the trial registry.
-- **Sensitivity analysis** (stretch) uses training folds only.
-- The final holdout is never used for parameter selection and is reported separately.
+### 5.2 Section B: Interactive Chart Component
+- Candlestick and volume visualization for all four contracts across configurable historical timeframes (1D, 1W, 1M, 6M, 1Y, All).
+- Crosshair, dynamic price scales, date-time coordinate tooltips, and responsive zoom/pan.
+- Dual-mode visualization:
+  - **Raw Tradable Price View:** Quotes exactly as published on exchange.
+  - **Normalized Analytical View:** Standardized to ₹/10g 999 fine gold.
+- Relative-Value Spread Chart: Visualizing $s_t = \ln(P_A) - \ln(P_B) + \text{carry}$ with rolling mean and $\pm 2\sigma$ Bollinger bands.
+- Statistical Deviation Panel: Rolling Z-score with configured entry/exit thresholds.
+- Signal event markers matching persisted database signals.
+- Comprehensive states: Loading skeletons, empty data states, error alerts, and stale feed notices.
 
-## 13. Functional Requirements
+### 5.3 Section C: Signal Monitor
+- Live card grid of all 6 eligible cross-contract pairs.
+- Decision state: Prominent binary display (`ALERT` or `QUIET`).
+- Detailed metrics: Quoted spread, normalized spread, carry adjustment rate, rolling Z-score, expected convergence gross edge.
+- **12-Gate Risk Waterfall Modal/Panel:** Full disclosure of all 12 evaluated gates with measured values, thresholds, safety margins, and failure reason codes.
+- **Nearest-Miss Card:** Identifies the closest non-alerting pair, displaying how many gates passed and the narrowest failing ratio.
 
-### Core (from v1)
-- **FR1** Download Bhavcopy for a date or date range, with polite caching.
-- **FR2** Validate dates and schema, and normalize source formats (pre- and post-October 2023 adapters).
-- **FR3** Store contract-level raw and processed data.
-- **FR4** Maintain a configuration-driven contract master with the facts register.
-- **FR5** Compute normalized prices.
-- **FR6** Perform smallest-gap expiry matching and carry adjustment.
-- **FR7** Compute the log spread and anomaly score.
-- **FR8** Apply the price-quality, cost, liquidity and expiry gates, evaluating all of them.
-- **FR9** Run walk-forward backtests and persist trades and folds.
-- **FR10** Produce P&L attribution.
-- **FR11** Provide the dashboard screens listed in §15.
-- **FR12** Provide replay mode for historical dates.
-- **FR13** Provide paper-trade simulation.
-- **FR14** Send optional Telegram alerts for newly gated signals.
-- **FR15** Expose read-only analytical APIs.
+### 5.4 Section D: Portfolio Snapshot & Risk Monitor
+- Simulated capital management: Initial cash, available margin, total equity.
+- Open paper positions with entry price, mark-to-market valuation, fees deducted, and unrealized P&L.
+- Closed trade audit log with entry/exit timestamps, holding period, and realized net P&L.
+- Portfolio exposure attribution: Gross notional exposure, contract concentration %, correlated exposure risk.
+- Scenario stress tester: User can input hypothetical market shocks (e.g. "Adverse 2% gold move", "Carry rate spike +100bps") to evaluate estimated drawdown.
 
-### MVP additions (v2)
-- **FR16 Gate waterfall.** Show every gate per pair-day, with pass/fail, margin and reason code.
-- **FR17 Nearest-miss meter.** On quiet days, show which pair came closest to alerting and by how much (z vs threshold, edge vs hurdle, liquidity vs minimum).
-- **FR18 Data-quality flags.** Flag zero or low-volume prices, close/settlement divergence, missing fields, rejected dates and duplicates, and show them on the Data Health screen.
-- **FR19 Cost breakdown panel.** Show every cost component in ₹ for each alert and each trade.
-- **FR20 Spec trust panel.** Show each contract spec with its source, verified date and status badge (`VERIFIED_OFFICIAL`, `SECONDARY`, `DISPUTED`, `TO_VERIFY`).
-- **FR21 Backtest baselines.** Run "always quiet" and "random entry" baselines with the same costs.
-- **FR22 Contract converter.** Enter any contract's quoted price and see its equivalent in ₹/10 g 999 and in each other contract's quote basis.
-- **FR23 Cheapest-to-hedge calculator.** For a target quantity of fine grams, show for each contract:
-  - lots needed;
-  - effective grams and residual grams;
-  - normalized price;
-  - round-trip costs;
-  - cost per 10 g;
-  - liquidity status.
+---
 
-  This is analytics only, with a disclaimer.
-- **FR24 Lot-ratio sizer.** For a chosen pair, find the integer lot ratio that minimizes residual fine grams within the configured caps.
-- **FR25 Event markers.** Read dated market events from config (each with a source and verified flag) and show them on price and spread charts.
-- **FR26 Plain-language explanations.** Template-based English and Hindi explanations of each evidence record. An optional LLM rewrite must pass the numeric guard (R25).
-- **FR27 Evidence pack export.** Export any alert or pair-day as CSV and printable HTML/PDF, with all inputs, gates, versions and source hashes.
+## 6. Unified AurumLens AI Chatbot Requirements
 
-### Stretch (only after FR1–FR27 pass Phase 7 checks)
-- **FR28** Replay player that steps through a date range automatically.
-- **FR29** Parameter-sensitivity heatmap on training folds only.
-- **FR30** Daily Telegram digest (status of all pairs plus the nearest miss).
-- **FR31** Paper-trade journal timeline.
-- **FR32** Premium over a spot reference (for example, IBJA), only if a reliable historical source is confirmed.
+A single, unified conversational intelligence assistant named **AurumLens AI** must be embedded into the platform.
 
-## 14. Non-functional Requirements
-- **Reproducible:** the same dataset version and config version give identical results.
-- **Traceable:** every number in the UI traces to stored source and derived rows.
-- **Offline demo:** works entirely from cached data.
-- **Performance:** a full MVP backtest runs in under 60 seconds on a normal laptop.
-- **Secrets:** never committed. Read-only public API. Privileged actions require a token.
-- **Clarity:** a non-trader can tell `QUIET` from `ALERT`, and understand one signal, within about 30 seconds.
-- **Bilingual explanations:** English and Hindi.
-- **Disclaimer:** "Analytics only — not investment advice" is visible on every screen.
+### 6.1 Unified Architecture Mandate
+- **No Split Personas:** Users must NOT be forced to switch between separate "Trading Guide" and "Portfolio Manager" bots.
+- **Autonomous Intent Routing:** The single assistant dynamically classifies user inquiries into:
+  1. *Education & Concepts* (e.g. explaining basis, carry, Z-scores).
+  2. *Market & Signal Diagnostics* (e.g. why an alert was triggered or blocked).
+  3. *Portfolio Management* (e.g. summarizing holdings, calculating MTM, reviewing trade history).
+  4. *What-If Risk Simulation* (e.g. running stress tests on proposed trades).
 
-## 15. MVP Screens
-1. **Overview:** market status (`QUIET`/`ALERT`), pair status cards, nearest miss, data freshness, spec-mode watermark.
-2. **Pair Analysis:** contracts and expiries, normalized prices, adjusted spread, z-score with entry and exit bands, gate waterfall, cost breakdown, event markers.
-3. **Backtest & Attribution:** walk-forward fold table, holdout, baselines, gross/cost/slippage/net, strategy vs residual gold P&L, Deflated Sharpe Ratio, trade ledger.
-4. **Contract Calendar:** expiries, unsafe tender windows, liquid windows, events.
-5. **Alert Log / Evidence:** alerts, explanations (English and Hindi), evidence export.
-6. **Hedge Tools:** converter, cheapest-to-hedge, lot-ratio sizer.
-7. **Data Health & Spec Trust:** ingestion log, rejects, quality flags, facts register.
-8. **Methodology:** a static explanation of the pipeline, formulas and limitations.
-9. **Paper Trade panel** (optional).
+### 6.2 Chatbot Tool Access & Deterministic Grounding
+- The LLM never calculates financial figures or estimates prices. It calls deterministic Python backend tools via structured APIs.
+- Every response containing market figures must include an authoritative timestamp and data status label.
+- Portfolio queries are strictly scoped to the authenticated user's records.
+- **NumericGuard Enforcement:** Text generated by the LLM is programmatically audited to ensure all numbers strictly match evidence JSON values.
 
-## 16. Explicit MVP Exclusions
-- Real-money broker order placement.
-- Intraday tick or order-book engine.
-- Gold-direction prediction of any kind (deep learning or otherwise).
-- User payments and accounts.
-- Mobile app.
-- Commodities other than the four gold contracts.
-- Synthetic data presented as real results.
-- CPCV as the primary validation method (possible future research; walk-forward stays primary).
+### 6.3 Paper Order Confirmation Flow
+- The chatbot operates in **read-only** mode by default.
+- If a user asks the chatbot to create or close a simulated position (e.g. "Simulate buying 4 lots of GOLDTEN vs 5 lots of GOLDGUINEA"), the chatbot stages a pending order and renders an **explicit UI confirmation card**. No simulated order executes without the user clicking the confirmation button.
 
-## 17. Future Execution Extension
-`Signal -> Risk Manager -> Execution Engine -> Broker Adapter -> Order Manager -> Position Monitor -> Exit Engine`.
+---
 
-Before live execution, the following are required:
-- paper-trading evidence;
-- broker reconciliation;
-- partial-fill handling;
-- a maximum slippage limit;
-- position limits;
-- daily loss limits;
-- duplicate-order protection;
-- a kill switch;
-- compliance review.
+## 7. Functional Requirements Matrix (FR1 – FR35)
 
-## 18. MVP Success Criteria
-A demo is successful when the team can:
-- Load verified real MCX data, and show the facts register with statuses.
-- Show the four contracts normalized correctly, with the GOLDM purity direction tested.
-- Explain one pair end to end, including the gate waterfall and cost breakdown.
-- Show a quiet day **with its nearest miss**.
-- Show a historical alert day.
-- Show a tempting anomaly correctly blocked by liquidity, expiry or a stale price.
-- Run a walk-forward backtest on unseen data, compared with the baselines.
-- Show costs and attribution transparently.
-- Show the cheapest-to-hedge calculator for a sample quantity.
-- Show a Hindi explanation of an alert.
-- Run the whole demo offline from cached data.
+### Data Ingestion & Quality
+- **FR1:** Ingest MCX Bhavcopy across legacy (pre-Oct 2023) and modern CDP formats.
+- **FR2:** Verify requested vs returned trade dates; reject holiday/empty responses.
+- **FR3:** Store raw downloads immutably with SHA-256 verification hashes.
+- **FR4:** Flag prices as `SUSPECT` if volume is zero, OI is zero, or close/settlement gap exceeds threshold.
+- **FR5:** Standardize contract symbols with strict allowlisting.
 
-## 19. Open Questions
-1. GOLDGUINEA purity basis (F9).
-2. Whether Bhavcopy includes a settlement price (F14).
-3. GUINEA/PETAL coin premium (F15).
-4. Exact Bhavcopy schema before and after the October 2023 migration (F13).
-5. The content of circular MCX/TRD/456/2025 (F7).
-6. Which broker's brokerage schedule to use as the default cost profile (F16).
+### Quant Analytics & Relative Value
+- **FR6:** Normalize contract prices to ₹/10g 999 fine gold with programmatic purity direction checks.
+- **FR7:** Pair contracts based on smallest calendar expiry gap ($\le 35$ days).
+- **FR8:** Compute curve carry from term structure, falling back to configured rate with source labeling.
+- **FR9:** Calculate adjusted log spread $s_t = \ln(P_{A,\text{norm}}) - \ln(P_{B,\text{norm}}) + \text{carry}$.
+- **FR10:** Compute rolling Z-score and MAD score using history through $t-1$ strictly.
+- **FR11:** Evaluate the complete 12-Gate Waterfall simultaneously for every pair on every session.
+- **FR12:** Output binary `ALERT` or `QUIET` decisions with zero ambiguous middle states.
+- **FR13:** Rank quiet pairs using Nearest-Miss lexicographical scoring.
+- **FR14:** Calculate integer lot ratios minimizing unhedged residual fine grams.
+- **FR15:** Deduct itemized transaction costs (brokerage, exchange, SEBI, sell-only CTT, buy-only stamp duty, GST).
+- **FR16:** Estimate bid-ask spread and adverse slippage using Corwin-Schultz (2012) high-low model.
+
+### Backtesting & Research
+- **FR17:** Execute expanding-window walk-forward backtests with $t+1$ execution.
+- **FR18:** Benchmark backtest returns against Buy-and-Hold and Seeded Random Entry baselines.
+- **FR19:** Compute Deflated Sharpe Ratio (DSR) discounting for multiple trials.
+- **FR20:** Log all backtest configurations in an immutable Trial Registry.
+
+### Pre-Trade Tools & Explainability
+- **FR21:** Provide interactive Contract Parity Converter (₹/10g 999).
+- **FR22:** Provide Cheapest-to-Hedge Calculator ranking friction for any target gram input.
+- **FR23:** Generate bilingual plain English and Hindi signal explanations.
+- **FR24:** Enforce strict regex NumericGuard auditing all generated text.
+- **FR25:** Export evidence dossiers in CSV and standalone HTML formats.
+
+### Dashboard & Charting
+- **FR26:** Render interactive candlestick and volume charts across selectable timeframes.
+- **FR27:** Provide toggle between raw exchange prices and normalized ₹/10g 999 prices.
+- **FR28:** Render relative spread charts with rolling mean and $\pm 2\sigma$ deviation bands.
+- **FR29:** Display historical strategy entry/exit markers corresponding to verified database signals.
+- **FR30:** Render market overview status strip with data quality warning indicators.
+
+### Paper Trading & Portfolio Risk
+- **FR31:** Maintain simulated user portfolios with cash, open positions, and realized/unrealized P&L.
+- **FR32:** Enforce portfolio risk limits (max risk per trade, max portfolio exposure).
+- **FR33:** Provide "what-if" risk scenario stress testing (e.g. price drop, volatility surge).
+- **FR34:** Require explicit two-step user confirmation before creating or closing paper trades.
+
+### Unified AI Chatbot
+- **FR35:** Provide single conversational AI assistant ("AurumLens AI") with intent detection, tool execution, multi-turn memory, timestamped citations, and zero number fabrication.
+
+---
+
+## 8. Non-Functional Requirements
+
+- **Calculation Determinism:** The Python quant engine must produce 100% reproducible results given identical config and dataset versions.
+- **Zero Client-Side Math:** Next.js and SQL views must only display, filter, and join. Financial math is forbidden in the UI layer.
+- **Latency & Performance:** 
+  - FastAPI tool endpoints: $< 150\text{ ms}$.
+  - Full historical daily evaluation across all pairs: $< 3\text{ seconds}$.
+  - Walk-forward backtest (5-year history): $< 60\text{ seconds}$.
+- **Security & Authorization:** Server-side Row Level Security (RLS) guaranteeing users can only read their own portfolio and simulated trade records.
+- **Accessibility:** WCAG 2.1 Level AA compliance, color-independent alert states, keyboard navigable.
+
+---
+
+## 9. Success Metrics & Quality Gates
+
+- **Zero Hallucination:** 100% of numerical figures emitted by the chatbot match backend tool responses verified by NumericGuard.
+- **Quant Integrity:** 100% pass rate on normalization direction tests, cost asymmetry tests, and no-look-ahead regressions.
+- **System Stability:** Rehearsal runner passes 3 consecutive cycles of unit tests (117+ tests), secrets scan (0 leaks), and frontend production builds.
