@@ -9,16 +9,16 @@
 
 | Metric / Dimension | Current Status | Notes & Verification |
 |---|---|---|
-| **Python Quant Engine** | **100% COMPLETE** ✅ | 127 unit/integration tests passing in ~6.2s |
+| **Python Quant Engine** | **100% COMPLETE** ✅ | 134 unit/integration tests passing in ~6.1s |
 | **Quant Gating & Evidence** | **100% COMPLETE** ✅ | 12-Gate Waterfall, itemized Indian friction, Corwin-Schultz slippage |
 | **Walk-Forward Backtest** | **100% COMPLETE** ✅ | Folds, holdouts, gross/net attribution, Deflated Sharpe Ratio |
-| **FastAPI Microservice** | **100% COMPLETE** ✅ | Tools, explainers, chart API, paper portfolio API, risk stress runner |
-| **Security & Secrets Posture** | **100% CLEAN** ✅ | 0 leaks detected across 142+ files (`scan_secrets.py`) |
+| **FastAPI Microservice** | **100% COMPLETE** ✅ | Tools, explainers, chart API, paper portfolio API, risk stress runner, chatbot API |
+| **Security & Secrets Posture** | **100% CLEAN** ✅ | 0 leaks detected across 146+ files (`scan_secrets.py`) |
 | **FR Baseline Verification** | **27/27 PASS** ✅ | All functional requirements verified by `verify_fr_checklist.py` |
 | **Next.js Web Frontend** | **PROTOTYPE COMPLETE** ✅ | 12 static routes pre-rendering; Stitch Fintech institutional design |
 | **Interactive Chart Suite** | **100% COMPLETE** ✅ | `InteractiveChart.tsx` with dual-mode parity, spread & Z-score panels |
 | **Paper Trading & Risk Runner** | **100% COMPLETE** ✅ | Two-phase staged execution, MTM ledger, What-If stress tester |
-| **Unified AI Chatbot Dock** | **IN SPEC / PROTOTYPE** 🟡 | Python backend explainer & NumericGuard ready; chat dock in Phase 4 |
+| **Unified AI Chatbot Dock** | **100% COMPLETE** ✅ | `ChatbotDock.tsx` floating dock, NumericGuard, 5-domain intent router |
 | **Offline Rehearsal Runner** | **3/3 PASS** ✅ | Passes 3 consecutive verification cycles (`rehearse_demo.py`) |
 
 ---

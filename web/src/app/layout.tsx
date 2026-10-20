@@ -3,6 +3,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatbotDock from "@/components/ChatbotDock";
 
 export const metadata: Metadata = {
   title: "AurumLens — MCX Gold RV Intelligence",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <main className="flex-1 overflow-y-auto p-6 bg-[#FDFBF7]">{children}</main>
           <Footer />
         </div>
+        <ChatbotDock />
       </body>
     </html>
   );
