@@ -18,6 +18,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 
 from aurumlens.analytics.sizing import size_contracts
+from aurumlens.api.routes.chart import chart_router
 from aurumlens.config.loader import load_contracts_config
 from aurumlens.explain.explainer import SignalExplainer
 from aurumlens.export.evidence import export_evidence_to_csv, export_evidence_to_html
@@ -37,6 +38,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(chart_router)
 
 ADMIN_TOKEN = os.getenv("AURUM_ADMIN_TOKEN", "aurumlens-dev-token")
 explainer = SignalExplainer()

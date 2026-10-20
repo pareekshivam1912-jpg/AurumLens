@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import InteractiveChart from "@/components/InteractiveChart";
 import {
   GitCompare,
   Calendar,
@@ -192,6 +193,12 @@ export default function PairAnalysisPage() {
           </button>
         </div>
       </div>
+
+      {/* Interactive Candlestick, Parity & Spread Charting Suite */}
+      <InteractiveChart
+        initialPair={selectedPair.replace("-", "_")}
+        onSelectDate={(d) => setReplayDate(d)}
+      />
 
       {/* Contract Specs & Normalization Strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
