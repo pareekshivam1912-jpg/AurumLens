@@ -202,16 +202,38 @@ Pairs are ranked lexicographically by $(\text{Gates Passed} \downarrow, \min \te
 
 The FastAPI service runs on `http://localhost:8000` with interactive Swagger docs at `/docs`.
 
+### Core System & Quantitative Endpoints
 | Endpoint | Method | Description | Parameters |
 |---|---|---|---|
 | `/v1/health` | GET | Health & version status | None |
-| `/v1/tools/convert` | GET | Cross-contract parity conversion | `source_symbol`, `price`, `target_symbol` |
-| `/v1/tools/lot-ratio` | GET | Integer lot sizing ratio | `symbol_a`, `symbol_b`, `max_lots` |
-| `/v1/tools/hedge-cost` | GET | Ranked cheapest-to-hedge calculator | `target_grams`, `spot_price` |
-| `/v1/explain` | POST | Bilingual explanation with NumericGuard | `evidence_dict`, `language` (en/hi) |
-| `/v1/export/csv` | POST | Export evidence pack to CSV format | `evidence_dict` |
-| `/v1/export/html` | POST | Export evidence pack to HTML format | `evidence_dict` |
-| `/v1/admin/eval-date` | POST | Evaluate all pairs for a specific date | `trade_date`, Header: `Bearer <token>` |
+| `/v1/tools/convert` | GET | Cross-contract parity conversion (FR22) | `source_symbol`, `price`, `target_symbol` |
+| `/v1/tools/lot-ratio` | GET | Integer lot sizing ratio (FR24) | `symbol_a`, `symbol_b`, `max_lots` |
+| `/v1/tools/hedge-cost` | GET | Ranked cheapest-to-hedge calculator (FR23) | `target_grams`, `spot_price` |
+| `/v1/signals/{id}/explain` | GET | Bilingual explanation with NumericGuard | `lang` (en/hi) |
+| `/v1/signals/{id}/evidence.csv` | GET | Export evidence pack to CSV format | None |
+| `/v1/signals/{id}/evidence.html` | GET | Export audited evidence report in standalone HTML | None |
+| `/v1/admin/refresh` | POST | Trigger market data pipeline sync | Header: `Bearer <token>` |
+
+### Interactive Charting Suite Endpoints (Phase 1)
+| Endpoint | Method | Description | Parameters |
+|---|---|---|---|
+| `/v1/chart/contract/{symbol}` | GET | OHLCV candles & normalized parity prices | `symbol`, `range` (1W, 1M, 3M, 6M, 1Y, ALL) |
+| `/v1/chart/pair/{pair_name}` | GET | Cross-contract log spreads, Bollinger bands ($\mu \pm 2\sigma$), and Z-scores | `pair_name`, `range`, `lookback`, `min_history` |
+
+### Paper Portfolio & Risk Simulation Endpoints (Phase 3)
+| Endpoint | Method | Description | Parameters |
+|---|---|---|---|
+| `/v1/paper/portfolio` | GET | Full portfolio ledger, MTM equity, and margin | None |
+| `/v1/paper/stage` | POST | Stage candidate paper trade (Phase 1 of two-phase flow) | `OrderStageRequest` |
+| `/v1/paper/confirm` | POST | Confirm & execute staged trade (Phase 2 of two-phase flow) | `OrderConfirmRequest` |
+| `/v1/paper/close` | POST | Close position with exit reason code | `PositionCloseRequest` |
+| `/v1/paper/simulate-risk` | POST | What-If risk stress runner under spot/spread shocks | `RiskStressRequest` |
+
+### Unified AurumLens AI Conversational Endpoints (Phase 4)
+| Endpoint | Method | Description | Parameters |
+|---|---|---|---|
+| `/v1/chat` | POST | Conversational assistant with NumericGuard and tool dispatching | `ChatRequest` (message, language, session_id) |
+| `/v1/chat/suggestions` | GET | Quick prompt starter chips | None |
 
 ---
 
@@ -252,7 +274,7 @@ npm run dev
 ### Running System Verification & Rehearsals
 
 ```bash
-# Run the 117-test Python test suite (~7s)
+# Run the 134-test Python test suite (~6s)
 python -m pytest -q
 
 # Run repository security & credential leak scanner
